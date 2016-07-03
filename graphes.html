@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!-- saved from url=(0064)https://dl.dropboxusercontent.com/u/4189520/GraphJS/graphjs.html -->
+<html lang="en">
+    <head>
+        <title>Math' mon graphe - Modélisation par un graphe</title>
+
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="user-scalable=no, width=1070, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+
+        <!-- Style -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="./graphes_files/style.css">
+
+        <!-- Scripts externes -->
+        <script type="text/javascript" src="./graphes_files/jquery.min.js"></script>
+        <script type="text/javascript" src="./graphes_files/sylvester.src.js"></script>
+
+        <!-- Scripts persos -->
+        <script type="text/javascript" src="./graphes_files/preliminaires.js"></script>
+        <script type="text/javascript" src="./graphes_files/classes.js"></script>
+        <script type="text/javascript" src="./graphes_files/graph.js"></script>
+        <script type="text/javascript" src="./graphes_files/main.js"></script>
+    </head>
+
+    <body>
+        <div id="container" class="container">
+            <!-- Titre et barre d'outils de la page -->
+            <div class="row">
+                <div id="toolbar" class="col-xs-9">
+                    <div class="btn-group btn-group-sm">
+                        <button id="btnselect" class="btn btn-secondary uimode uimode-0 selected">Manipuler</button>
+                        <button id="btnaddvertex" class="btn btn-secondary uimode uimode-2" title="Raccourci : Alt+Clic">Ajouter noeud</button>
+                        <button id="btnaddedge" class="btn btn-secondary uimode uimode-1" title="Raccourci : Shift+Alt+Clic">Ajouter arête</button>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button id="btninfo" class="btn btn-primary" title="Show/hide information box">Infobox</button>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button id="btnload" class="btn btn-secondary">Charger un graphe</button>
+                        <button id="btnsave" class="btn btn-secondary">Sauvegarder</button>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button id="btnclear" class="btn btn-secondary">Nouveau canvas</button>
+                    </div>
+                </div>
+                <div class="col-xs-3">
+                    <h1>Math' mon graphe</h1>
+                </div>
+            </div>
+
+            <div class="row" id="primary">
+                <!-- Canvas : la ou tout se passe ! -->
+                <div id="canvas-container" class="col-xs-9">
+                    <canvas width="600" height="350"></canvas>
+                </div>
+
+                <!-- Menu de description du graphe -->
+                <div id="secondary" class="col-xs-3">
+                    <div id="elements" class="panel">
+                        <h2>Eléments du graphe</h2>
+                        <ul class="elements">
+                            <li class="h">Noeuds</li>
+                            <li id="vertex-3" class="selected"><a href="javascript://">Vertex 1</a></li>
+                            <li class="h">Arêtes</li>
+                            <li id="edge-0"><a href="javascript://">Edge </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section informations sur un noeud -->
+            <div class="row">
+                <div class="col-xs-12">
+                    <div id="info" class="panel">
+                        <div>
+                            <button class="r button removebtn" href="javascript://">Remove vertex</button>
+                            <h2>Vertex</h2>
+                            <div class="col">
+                                <p class="field">
+                                    <label for="label">Label: </label>
+                                    <input type="text" id="label" size="3" value="4" autocapitalize="off">
+                                </p>
+                                <p class="field"><span class="i">Degree: </span>2</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
+    </body>
+</html>
