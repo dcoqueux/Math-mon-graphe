@@ -1,27 +1,5 @@
 // GRAPH JS : Main ======================================================================
 
-// Exemple au démarrage -----------------------------------------------------------------
-
-var dvertices = [ 
-    // id, valeur, x, y
-    new Vertex(1, 1, 100, 150),
-    new Vertex(2, 2, 200, 100),
-    new Vertex(3, 3, 200, 200),
-    new Vertex(4, 4, 300, 150)
-]
-
-var dedges = [ 
-    // id, valeur, noeud de départ, noeud d'arrivée
-    // [[1, 2], [2, 4], [1, 3], [3, 4], [2, 3]]
-    new Edge(5, "", dvertices[0], dvertices[1]),
-    new Edge(6, "", dvertices[1], dvertices[3]),
-    new Edge(7, "", dvertices[0], dvertices[2]),
-    new Edge(8, "", dvertices[2], dvertices[3]),
-    new Edge(9, "", dvertices[1], dvertices[2])
-]
-
-// Initialising the document -----------------------------------------------------------
-
 $(document).ready(function(){
     
     // Variables (I really need to move these out of global scope...)
@@ -42,13 +20,24 @@ $(document).ready(function(){
     ui.styles     = $("#styles")
     
     // Example
-    var diamond   = new Graph(dvertices, dedges)
+    new Graph();
+    // coordonnées du nouveau noeud
+    n1 = graph.addVertex([150, 175], "1")
+    n2 = graph.addVertex([300, 50], "2")
+    n3 = graph.addVertex([300, 300], "3")
+    n4 = graph.addVertex([450, 175], "4")
+    // [[1, 2], [2, 4], [1, 3], [3, 4], [2, 3]]
+    graph.addEdge([n1, n2])
+    graph.addEdge([n2, n4])
+    graph.addEdge([n1, n3])
+    graph.addEdge([n3, n4])
+    graph.addEdge([n2, n3])
     
     // ===== Ecoute d'evenements clic à la souris =====
 
     // Drag and drop
-    canvas_elt.mousedown( function(){dragging = true}  )
-    $("body").mouseup( function(){dragging = false} )
+    canvas_elt.mousedown( function(){ dragging = true }  )
+    $("body").mouseup( function(){ dragging = false } )
     // Sur le canvas
     canvas_elt.mousemove(canvasMove)
     canvas_elt.click(canvasClick)

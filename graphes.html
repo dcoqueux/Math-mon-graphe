@@ -10,6 +10,7 @@
 
         <!-- Style -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="./graphes_files/font/css/font-awesome.min.css">
         <link rel="stylesheet" href="./graphes_files/style.css">
 
         <!-- Scripts externes -->
@@ -27,63 +28,93 @@
         <div id="container" class="container">
             <!-- Titre et barre d'outils de la page -->
             <div class="row">
-                <div id="toolbar" class="col-xs-9">
+                <div id="toolbar" class="col-xs-7 col-md-8 col-lg-9">
                     <div class="btn-group btn-group-sm">
-                        <button id="btnselect" class="btn btn-secondary uimode uimode-0 selected">Manipuler</button>
-                        <button id="btnaddvertex" class="btn btn-secondary uimode uimode-2" title="Raccourci : Alt+Clic">Ajouter noeud</button>
-                        <button id="btnaddedge" class="btn btn-secondary uimode uimode-1" title="Raccourci : Shift+Alt+Clic">Ajouter arête</button>
+                        <button id="btnselect" class="btn btn-secondary uimode uimode-0 active">
+                            <i class="fa fa-pencil"></i>
+                            <span class="btn-label"> Manipuler</span>
+                        </button>
+                        <button id="btnaddvertex" class="btn btn-secondary uimode uimode-2" title="Raccourci : Alt+Clic">
+                            <i class="fa fa-circle-o"></i>
+                            <span class="btn-label"> Ajouter noeud</span>
+                        </button>
+                        <button id="btnaddedge" class="btn btn-secondary uimode uimode-1" title="Raccourci : Shift+Alt+Clic">
+                            <i class="fa fa-arrows-h"></i>
+                            <span class="btn-label"> Ajouter arête</span>
+                        </button>
                     </div>
                     <div class="btn-group btn-group-sm">
-                        <button id="btninfo" class="btn btn-primary" title="Show/hide information box">Infobox</button>
+                        <button id="btnload" class="btn btn-secondary">
+                            <i class="fa fa-folder-open-o"></i>
+                            <span class="btn-label"> Charger un graphe</span>
+                        </button>
+                        <button id="btnsave" class="btn btn-secondary">
+                            <i class="fa fa-save"></i>
+                            <span class="btn-label"> Sauvegarder</span>
+                        </button>
                     </div>
                     <div class="btn-group btn-group-sm">
-                        <button id="btnload" class="btn btn-secondary">Charger un graphe</button>
-                        <button id="btnsave" class="btn btn-secondary">Sauvegarder</button>
-                    </div>
-                    <div class="btn-group btn-group-sm">
-                        <button id="btnclear" class="btn btn-secondary">Nouveau canvas</button>
+                        <button id="btnclear" class="btn btn-secondary">
+                            <i class="fa fa-file-o"></i>
+                            <span class="btn-label"> Nouveau graphe</span>
+                        </button>
                     </div>
                 </div>
-                <div class="col-xs-3">
+                <div class="col-xs-5 col-md-4 col-lg-3">
                     <h1>Math' mon graphe</h1>
                 </div>
             </div>
 
             <div class="row" id="primary">
                 <!-- Canvas : la ou tout se passe ! -->
-                <div id="canvas-container" class="col-xs-9">
+                <div id="canvas-container" class="col-xs-7 col-md-8 col-lg-9">
                     <canvas width="600" height="350"></canvas>
                 </div>
 
-                <!-- Menu de description du graphe -->
-                <div id="secondary" class="col-xs-3">
+                <!-- Menu latéral de description du graphe -->
+                <div id="secondary" class="col-xs-5 col-md-4 col-lg-3">
                     <div id="elements" class="panel">
                         <h2>Eléments du graphe</h2>
                         <ul class="elements">
                             <li class="h">Noeuds</li>
-                            <li id="vertex-3" class="selected"><a href="javascript://">Vertex 1</a></li>
+                            <li id="vertex-3" class="selected"><a href="javascript://">Noeud A</a></li>
+                            <li id="vertex-2" ><a href="javascript://">Noeud B</a></li>
                             <li class="h">Arêtes</li>
-                            <li id="edge-0"><a href="javascript://">Edge </a></li>
+                            <li id="edge-0"><a href="javascript://">Arête (A,B)</a></li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Section informations sur un noeud -->
+            <!-- Infobox sur un noeud, une arête, le graphe -->
             <div class="row">
                 <div class="col-xs-12">
+                    <div class="btn-group btn-group-sm">
+                        <button id="btninfo" class="btn btn-primary" title="Affiche/Cache le panneau d'information">
+                            <i class="fa fa-info"></i>
+                            <span class="btn-label"> Infobox</span>
+                        </button>
+                        <button class="btn btn-secondary" title="Affiche la matrice du graphe courant">
+                            <i class="fa fa-th"></i>
+                            <span class="btn-label"> Matrice d'adjacence</span>
+                        </button>
+                        <button class="btn btn-secondary" title="Simuler une marche aléatoire">
+                            <i class="fa fa-map-signs"></i>
+                            <span class="btn-label"> Marche aléatoire</span>
+                        </button>
+                    </div>
                     <div id="info" class="panel">
+                        <!-- Exemple 
                         <div>
-                            <button class="r button removebtn" href="javascript://">Remove vertex</button>
-                            <h2>Vertex</h2>
-                            <div class="col">
-                                <p class="field">
-                                    <label for="label">Label: </label>
-                                    <input type="text" id="label" size="3" value="4" autocapitalize="off">
-                                </p>
-                                <p class="field"><span class="i">Degree: </span>2</p>
-                            </div>
+                            <h2>Noeud</h2>
+                            <button class="r button removebtn" href="javascript://">Supprimer noeud</button>
+                            <p class="field">
+                                <label for="label">Poids: </label>
+                                <input type="text" id="label" size="3" value="4">
+                            </p>
+                            <p class="field"><span class="i">Degree: </span>2</p>
                         </div>
+                        -->
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@ var nb        = "number",
 var uimode    = 0,
     dragging  = false, 
     moved     = false, 
-    dp        = [null,null], 
+    tmp_edge  = [null, null], 
     dontclick = false,
     selected  = [],
     hovered   = null,
@@ -18,14 +18,13 @@ var uimode    = 0,
 
 var touch     = "createTouch" in document
 var click     = touch ? "tap" : "click"
-var cid       = 100
+var elt_id    = 1
 
 var vertices  = [],
     edges     = [],
     states    = [], // For undos/redos
-    graph    = null
-    // graphs = []
-    //gi         = 0 // Current graph (index)
+    graph     = null
+
 var canvas_elt = null,
     canvas     = null,
     context    = null
@@ -45,9 +44,7 @@ var GJ_TOOL_SELECT          = 0, // Mode manipulation du graphe
     GJ_TOOL_ADD_EDGE        = 1, // Mode ajout de noeud
     GJ_TOOL_ADD_VERTEX      = 2, // Mode ajout d'arête
     GJ_TOOL_SELECT_VERTEX   = 3, // Mode sélection d'arête
-    GJ_TOOL_SELECT_VERTICES = 4, // ???
-    GJ_TOOL_SELECT_EDGE     = 5, // Mode sélection de noeud
-    GJ_TOOL_SELECT_EDGES    = 6  // ???
+    GJ_TOOL_SELECT_EDGE     = 4 // Mode sélection de noeud
 
 var RAYON_NOEUD = 15
 
@@ -55,15 +52,15 @@ var RAYON_NOEUD = 15
 // Style -------------------------------------------------------------------------------
 
 
-function ElementStyle(strokecolor, fillcolor, strokewidth, vertexradius){
+function ElementStyle(strokecolor, fillcolor, strokewidth){
     if(typeof strokewidth  != nb || strokewidth  <= 0){ strokewidth  = 1.2 }
-    if(typeof vertexradius != nb || vertexradius <= 0){ vertexradius = RAYON_NOEUD }
-    this.id           = ++cid
+
+    this.id           = ++elt_id
     this.shape        = "circle"
     this.strokecolor  = strokecolor
     this.fillcolor    = fillcolor
     this.strokewidth  = strokewidth
-    this.vertexradius = vertexradius
+    this.vertexradius = RAYON_NOEUD
 }
 
 function styleContext(cx, style, fill){

@@ -14,11 +14,8 @@ function getElement(x, y){
         el = vertices[i]
         r  = el.style.vertexradius * (touch ? 3 : 1.5)
         //w  = el.style.strokewidth
-        if(
-            x >= el.x - r && x <= el.x + r &&
-            y >= el.y - r && y <= el.y + r
-        ){
-            return el // This is the one!
+        if(Math.abs(x - el.x) <= r && Math.abs(y - el.y) <= r) {
+            return el
         }
     }
     
@@ -39,7 +36,7 @@ function getElement(x, y){
                 var total = g.length
                 // This is number "i" of them
                 // Edge curvature
-            var space = 50
+            var space = 150
             var span  = (total-1) * space
             var bend  = -span/2 + i*space
 
@@ -120,14 +117,14 @@ function evtPosition(evt, canvas) {
  *  Modifie le canvas en temps réel à l'action "drag & drop" de l'utilisateur
  */
 function canvasMove(evt){
-    var p = evtPosition(evt, canvas_elt), el
-    var x = p[0]
-    var y = p[1]
+    var [x,y] = evtPosition(evt, canvas_elt)
+    var el
     
     if(dragging && uimode == GJ_TOOL_SELECT){
+        dlog("Drag")
         // Set dragging position
-        if(dp[0] == null){
-            dp = [x,y]
+        if(tmp_edge[0] == null){
+            tmp_edge = [x,y]
             // Simulated hovering on touch devices
             //if(touch){
                 hovered = getElement(x,y)
@@ -138,27 +135,27 @@ function canvasMove(evt){
             // Set selection
             if(!inArray(hovered, selected)){
                 setSelected(hovered, evt, context)
-                dp = [x,y]
+                tmp_edge = [x,y]
             }
             // Drag each selected element
             for(var n in selected){
                 el = selected[n]
                 if(el instanceof Vertex){
                     // Set original vertex position
-                    if(dp[0] == x && dp[1] == y){
+                    if(tmp_edge[0] == x && tmp_edge[1] == y){
                         el.ox = el.x
                         el.oy = el.y
                     }
 
                     // New coordinates (not too close to the edge)
-                    el.x = Math.max(5, el.ox + (x - dp[0]))
-                    el.y = Math.max(5, el.oy + (y - dp[1]))
+                    el.x = Math.max(5, el.ox + (x - tmp_edge[0]))
+                    el.y = Math.max(5, el.oy + (y - tmp_edge[1]))
                 }
             }
             updateState() // <-- Inefficient
         } else {
             // We're dragging a rectangle of selection
-            var selection  = graph.elementsWithinRect(dp[0], dp[1], x, y)
+            var selection  = graph.elementsWithinRect(tmp_edge[0], tmp_edge[1], x, y)
             //selected       = evt.shiftKey ? selected.concat(selection) : selection
             if(!evt.shiftKey){ selected = [] }
             for(var i in selection){
@@ -167,7 +164,7 @@ function canvasMove(evt){
             drawAll()
             context.strokeStyle = "rgba(153,153,153,0.5)"
             context.lineWidth   = 1
-            context.strokeRect(dp[0], dp[1], x-dp[0], y-dp[1])
+            context.strokeRect(tmp_edge[0], tmp_edge[1], x-tmp_edge[0], y-tmp_edge[1])
         }
         if(!touch){
             dontclick = true // Prevent click event on mouseup
@@ -177,12 +174,12 @@ function canvasMove(evt){
         if(uimode == GJ_TOOL_ADD_EDGE){
             hovered = getElement(x,y)
             if(touch && hovered instanceof Vertex){
-                dp[(dp[0] == null) ? 0 : 1] = hovered
+                tmp_edge[(tmp_edge[0] == null) ? 0 : 1] = hovered
                 selected = [hovered]
                 finishAddEdge(context)
             }
         } else {
-            dp = [null,null]
+            tmp_edge = [null,null]
         }
     }
 }
@@ -192,36 +189,37 @@ function canvasMove(evt){
  *  Fonction exécutée à l'évènement clic
  */
 function canvasClick(evt){
-    dlog(["CLICK", dragging, dontclick])
     if(!dragging && !dontclick){
-        var p    = evtPosition(evt, canvas_elt)
-        var x    = p[0]
-        var y    = p[1]
-        var el   = getElement(x,y)
-        var alt  = (evt.altKey || evt.ctrlKey)
-        dlog([el, uimode, $("#vertexautocomplete")])
-        if(uimode == GJ_TOOL_SELECT){
-            dlog(1)
-            setSelected(el, evt, context)
+        var clicPos = evtPosition(evt, canvas_elt)
+        var elmt = getElement(clicPos[0], clicPos[1])
+        var shortcutShift    = (evt.altKey || evt.ctrlKey) && evt.shiftKey
+        var shortcutNotShift = (evt.altKey || evt.ctrlKey) && !evt.shiftKey
+
+        if (uimode == GJ_TOOL_SELECT) {
+            dlog(["Clic", "Manipulation canvas"])
+            setSelected(elmt, evt, context)
             updateState()
         }
-        if(uimode == GJ_TOOL_SELECT && alt && evt.shiftKey && el instanceof Vertex){
-            dlog(2)
+        if(uimode == GJ_TOOL_SELECT && shortcutShift && elmt instanceof Vertex){
+            dlog(["Clic", "Départ arête"])
             startAddEdge(context)
         }
-        if(uimode == GJ_TOOL_ADD_EDGE && el instanceof Vertex){
-            dlog(3)
-            dp[(dp[0] == null) ? 0 : 1] = el
-            selected        = []
-            selected[el.id] = el
+        if(uimode == GJ_TOOL_ADD_EDGE && elmt instanceof Vertex){
+            dlog(["Clic", "Création arête ..."])
+            tmp_edge[(tmp_edge[0] == null) ? 0 : 1] = elmt
+
+            selected = []
+            selected[elmt.id] = elmt
+
             updateState(false)
             finishAddEdge(context)
         }
-        if((uimode == GJ_TOOL_ADD_VERTEX || (uimode == GJ_TOOL_SELECT && alt && !evt.shiftKey)) && el == null){
-            dlog(4)
-            finishAddVertex(x, y, context)
+        if((uimode == GJ_TOOL_ADD_VERTEX || (uimode == GJ_TOOL_SELECT && shortcutNotShift)) && elmt == null){
+            dlog(["Clic", "Nouveau noeud"])
+            finishAddVertex(clicPos[0], clicPos[1], context)
         }
     }
+
     if(dontclick){ dontclick = false }
 }
 
@@ -272,12 +270,12 @@ function startAddEdge(cx){
     
     $("a", msg).click(function(){ 
         setUimode(GJ_TOOL_SELECT); 
-        dp = [null,null]; updateState();
+        tmp_edge = [null,null]; updateState();
     })
     panel.empty().append(msg)
 
     selected  = [null]
-    dp        = [null,null]
+    tmp_edge        = [null,null]
     updateState(false)
     setUimode(GJ_TOOL_ADD_EDGE)
 }
@@ -303,7 +301,7 @@ function startAddVertex(cx){
     })
 
     selected  = [null]
-    dp        = [null,null]
+    tmp_edge        = [null,null]
     updateState(false)
     panel.empty().append(msg)
     setUimode(GJ_TOOL_ADD_VERTEX)
@@ -314,8 +312,9 @@ function startAddVertex(cx){
  *  
  */
 function finishAddEdge(cx){
-    if(uimode == GJ_TOOL_ADD_EDGE && dp[0] instanceof Vertex && dp[1] instanceof Vertex){
-        graph.addEdge(dp, cx)
+    if(uimode == GJ_TOOL_ADD_EDGE && tmp_edge[0] instanceof Vertex && tmp_edge[1] instanceof Vertex){
+        graph.addEdge(tmp_edge, cx)
+        dlog(["Arête créée"])
         clearUimode()
     }
 }
@@ -326,9 +325,10 @@ function finishAddEdge(cx){
  */
 function finishAddVertex(x, y, cx){
     if(x >= 0 && y >= 0){
-        var v = graph.addVertex([x,y], cx)
-        //dlog($("#vertexautocomplete"))
-        if($("#vertexautocomplete").is(":checked")){ // Kind of rough right now
+        var value = prompt("Nom du nouveau noeud ?")
+        var v = graph.addVertex([x,y], value, cx)
+
+        if( $("#vertexautocomplete").is(":checked") ) { 
             graph.semiComplete(v)
             updateState(false)
         } else {
@@ -375,7 +375,7 @@ function drawAll(cx) {
 
 
 /*
- *  Affiche l'étiquette d'un noeud
+ *  Affiche l'étiquette d'un noeud ou d'une arête
  */
 function drawLabel(cx, label, x, y){
     if(!cx){ cx = context }
@@ -414,7 +414,7 @@ function touchMove(evt){
  */
 function touchEnd(evt){
     dragging = false
-    dp       = [null,null]
+    tmp_edge       = [null,null]
     var ct   = evt.changedTouches
     if(!moved && ct.length == 1 && ct[0].target == canvas){
         canvasClick({ clientX: ct[0].pageX, clientY: ct[0].pageY })
@@ -442,24 +442,25 @@ function touchStart(evt){
 // UI modes -----------------------------------------------------------------------------
 
 /*
- *  
+ *  Modifie le type d'action en cours de l'utilisateur
+ *  (cf. constantes GJ_TOOL)
  */
 function setUimode(mode){
     var btn = $(".uimode-" + mode)
     if(btn.length > 0){
-        $(".uimode").removeClass("selected")
-        btn.addClass("selected")
+        $(".uimode").removeClass("active")
+        btn.addClass("active")
         uimode = mode
     }
 }
 
 
 /*
- *  
+ *  Ramener l'action de l'utilisateur à la manipulation du canvas
  */
 function clearUimode(){
     setUimode(GJ_TOOL_SELECT)
-    dp       = [null,null]
+    tmp_edge       = [null,null]
     selected = [null]
     updateState()
 }
@@ -478,7 +479,10 @@ function setSelected(el, evt, cx){
     if(el == null || el instanceof Vertex || el instanceof Edge){
         if(selected.length <= 0 || (selected.length > 0 && el != selected[0])){
             if(selected.length > 0 && shift){
-                ui.properties.html('<div class="selection"><strong>Sélection multiple</strong></div>')
+                ui.properties.html(
+                    '<button class="btn btn-sm btn-danger infoboxbtn">Supprimer sélection</button>' +
+                    '<h2>Multiselection</h2>'
+                )
             } else {
                 // Sélection simple : affichage des propriétés de l'élément
                 displayInfo(ui.properties, el, cx)
@@ -495,7 +499,7 @@ function setSelected(el, evt, cx){
 
 
 /*
- *  Demande la confirmation 
+ *  Demande la confirmation pour rendre le canvas vierge
  */
 function clearCanvas(cx, force){
     if(force || confirm("Voulez-vous supprimer le graphe actuel ? L'action est irréversible.")) {
@@ -514,25 +518,20 @@ function clearCanvas(cx, force){
  *  et supprime l'élément auquel cas.
  */
 function removeElement(el, graph, cx){
-    var t
-    if (el instanceof Vertex) { 
-        t = "vertex" 
-    } else if (el instanceof Edge) { 
-        t = "edge"  
-    } else { 
-        return false 
-    }
-    var r = confirm("Are you sure you want to remove this " + t + "?")
-    if(r){
+    var type_elt = el instanceof Vertex ? "du noeud" : "de l'arête";
+    dlog("Remove " + type_elt);
+
+    var rep = confirm("Vous confirmez la suppression " + type_elt + "?")
+    if (rep) {
         graph.detachChild(el)
         updateState()
     }
-    return r
+    return rep
 }
-
 
 /*
  *  Construit un graphe à partir d'un fichier JSON
+ *  TODO : inclure cette méthode dans la classe Graph et utiliser loadGraphFromJson
  */
 function graphFromJSON(json){
     if(typeof json != str){ return null }
@@ -587,11 +586,13 @@ function loadGraphFromJSON() {
  *  Exporte le graphe dans une description JSON
  */
 function saveGraphToJSON() {
-    prompt("Voici une description du graphe en JSON. Sauvez-là dans un fichier texte",
-        JSON.stringify(graph.toJSON()) );
+    prompt(
+        "Voici une description du graphe en JSON. Sauvez-là dans un fichier texte",
+        JSON.stringify(graph.toJSON())
+    );
 }
 
-// Méthodes d'affichage des données -----------------------------------------------------
+// Méthodes d'affichage des données sur l'interface -------------------------------------
 
 /*
  *  Mise à jour de l'affichage
@@ -615,10 +616,13 @@ function updateState(info){
 function displayInfo(panel, el, cx){
     if(!cx){ cx = context }
 
-    if(el instanceof Array){
+    if (el instanceof Array) {
         el = trimArray(el)
-        if(el.length > 1){
-            panel.html('<h2>Multiselection</h2>')
+        if (el.length > 1) {
+            panel.html(
+                '<button class="btn btn-sm btn-danger infoboxbtn">Supprimer sélection</button>' +
+                '<h2>Multiselection</h2>'
+            )
             return
         } else {
             el = el[0]
@@ -630,71 +634,51 @@ function displayInfo(panel, el, cx){
         if(el instanceof Vertex){
             var info = $(
                 '<div>' +
-                    '<button class="btn btn-danger r button removebtn">Supprimer noeud</button>' +
+                    '<button class="btn btn-sm btn-danger removebtn infoboxbtn">Supprimer noeud</button>' +
                     '<h2>Noeud ' + he(el.value) + '</h2>' +
-                    '<div class="col">' + 
-                        '<p class="field">' +
-                            '<label for="label">Nom : </label>' +
-                            '<input type="text" id="label" size="3" value="' + he(el.value) + '" autocapitalize="off">' +
-                        '</p>' +
-                        '<p class="field"><span class="i">Degré : </span>' + he(el.degree) + '</p>' +
-                    '</div>' +
+                    '<p>' +
+                        '<label for="label">Nom : </label>' +
+                        '<input type="text" id="label" size="3" value="' + he(el.value) + '" autocapitalize="off">' +
+                    '</p>' +
+                    '<p class="field"><span class="i">Degré : </span>' + he(el.degree) + '</p>' +
                 '</div>'
             )
-            $("input#label", info).keyup (function(){ el.value = this.value; drawAll() })
-            $("input#label", info).change(function(){ el.value = this.value; updateState() })
-            $("a.removebtn", info).click(function(){ removeElement(el, graph, cx) })
         }
         // ===== Infobox Arête =====
         else if(el instanceof Edge){
             var info = $(
                 '<div>' +
-                    '<div class="r" style="white-space:nowrap">' +
-                        '<button class="btn btn-warning button contractbtn">Contract arête</button>' +
-                        '<button class="btn btn-danger button removebtn">Supprimer arête</button>' +
+                    '<div class="btn-group btn-group-sm infoboxbtn">' +
+                        '<button class="btn btn-warning contractbtn" title="Fusionne les noeuds liés par l\'arête">Contracter arête</button>' +
+                        '<button class="btn btn-danger removebtn">Supprimer arête</button>' +
                     '</div>' +
                     '<h2>Arête [' + he(el.from.value) + ' -> ' + he(el.to.value) + ']</h2>' +
-                    '<div class="col">' +
-                        '<p class="field">' +
-                            '<label for="label">Poids : </label>' +
-                            '<input type="text" id="label" size="3" value="' + he(el.value) + '" autocapitalize="off">' +
-                        '</p>' +
+                    '<p>' +
+                        '<label for="label">Poids : </label>' +
+                        '<input type="text" id="label" size="3" value="' + he(el.value) + '">' +
+                    '</p>' +
                     '</div>' +
                 '</div>'
             )
-            $("input#label", info).keyup (function(){ el.value = this.value; drawAll() })
-            $("input#label", info).change(function(){ el.value = this.value; updateState() })
-            $("a.contractbtn", info).click(function(){ graph.contractEdge(el); updateState() })
-            $("a.removebtn", info).click(function(){ removeElement(el, graph, cx) })
+            $(".contractbtn", info).click(function(){ graph.contractEdge(el); updateState() })
         }
-    } else {
-        // ===== Infobox Graphe =====
-        var adj = []
-        var autoname = ""
+        $("input#label", info).keyup (function(){ el.value = this.value; drawAll() })
+        $("input#label", info).change(function(){ el.value = this.value; updateState() })
+        $(".removebtn", info).click(function(){ removeElement(el, graph, cx) })
 
-        if (graph.vertices.length <= 0) {
-            adj.push("empty")
-        } 
-        else {
-            if(graph.isWeighted()){
-                adj.push("weighted")
-            }
-            if(graph.isComplete()){
-                adj.push("complete")
-                autoname = "<em>K</em><sub>" + graph.vertices.length + "</sub>"
-            }
-        }
-        var title = (adj.length > 0 ? ucf(adj.join(" ")) + " g" : "G") + "raphe" + (autoname ? " " + autoname : "")
+    // ===== Infobox Graphe =====
+    } else {
         var info  = $(
             // Graph info
             '<div>' +
-            '<h2>' + title + '</h2>' +
-            '<div class="col">' +
-                '<p class="field"><span class="i">Nb de noeuds: </span>' + graph.vertices.length + '</p>' +
-                '<p class="field"><span class="i">Nb d\'arêtes: </span>' + graph.edges.length + '</p>' +
-            '</div>' +
+                '<button class="btn btn-sm btn-success adjustbtn infoboxbtn" title="Replace les noeuds dans le canvas">Réajuster graphe</button>' +
+                '<h2>Graphe</h2>' +
+                '<p><span>Nb de noeuds: </span>' + graph.vertices.length + '</p>' +
+                '<p><span>Nb d\'arêtes: </span>' + graph.edges.length + '</p>' +
+                '<p><span>Complet ? </span>' + (graph.isComplete() ? "Oui" : "Non") + '</p>' +
             '</div>'
         )
+        $(".adjustbtn", info).click(function(){ graph.readjust(); updateState(); })
     }
     panel.empty().append(info)
 }
@@ -704,68 +688,57 @@ function displayInfo(panel, el, cx){
  *  Affiche les éléments du graphe dans le panneau latéral
  */
 function displayElements(panel){
-    var list = "", a
+    var list = ""
+    var elt = null
 
-    // Vertices
+    // Noeuds
     if(graph.vertices.length > 0){
         list += '<li class="h">Noeuds</li>'
         for(var i in graph.vertices){
-            a = graph.vertices[i]
+            elt = graph.vertices[i]
             list += '<li id="vertex-' + i + '"' + 
-                (inArray(a, selected) ? ' class="selected"' : '') + '>' +
-                '<a href="javascript://">Noeud ' + he(a.value) + '</a></li>'
+                (inArray(elt, selected) ? ' class="selected"' : '') + '>' +
+                '<a href="javascript://">Noeud ' + he(elt.value) + '</a></li>'
         }
     }
-    // Edges
+    // Arêtes
     if(graph.edges.length > 0){
         list += '<li class="h">Arêtes</li>'
         for(var i in graph.edges){
-            a = graph.edges[i]
-            list += '<li id="edge-' + i + '"' + 
-                (inArray(a, selected) ? ' class="selected"' : '') + '>' +
-                '<a href="javascript://">Arête [' + he(a.from.value) + ' -> ' + he(a.to.value) + ']' +
-                ' (Poids : ' + he(a.value) + ')</a></li>'
+            elt = graph.edges[i]
+            list += '<li id="edge-' + i + '"' + (inArray(elt, selected) ? ' class="selected"' : '') + '>'
+                + '<a href="javascript://">Arête '
+                + (elt.directed ? '[' + he(elt.from.value) + ' -> ' + he(elt.to.value) + ']' :
+                    '(' + he(elt.from.value) + ', ' + he(elt.to.value) + ')')
+                + (elt.value != "" ? ' (Poids : ' + he(elt.value) + ')' : '') 
+                + '</a></li>'
         }
     }
-    //list += '</ul>'
-    list  = $(list) //$('<h2>Elements</h2>' + list)
-    // Click handler
+    list  = $(list)
+    
+    // Clic handler sur les éléments du panneau latéral
     $("a", list).click(function(evt){
-        var id = this.parentNode.id.split("-"), el = null
+        var id = this.parentNode.id.split("-")
+        var elt = null
         evt.preventDefault()
-        if(id.length > 1 && is_numeric(id[1])){
+
+        if(id.length > 1 && is_numeric(id[1])) {
+
+            // Détermination de l'élément sélectionné
             if(id[0] == "vertex"){
-                el = graph.vertices[id[1]]
+                elt = graph.vertices[id[1]]
+            } else if(id[0] == "edge"){
+                elt = graph.edges[id[1]]
             }
-            if(id[0] == "edge"){
-                el = graph.edges[id[1]]
-            }
-        }
-        if(el){
-            if(evt.shiftKey){
-                selected.push(el)
+
+            // Sélection multiple ?
+            if (evt.ctrlKey) {
+                selected.push(elt)
             } else {
-                selected = [el]
+                selected = [elt]
             }
         }
         updateState()
     })
     $("ul.elements", panel).empty().append(list)
-}
-
-
-/*
- *  
- */
-function inputNumberKeyUp(el, evt){
-    var val = parseInt(el.value)
-    if(!isNaN(val)){
-        var code = evt.keyCode || evt.which, up = 38, down = 40
-        if(code == up || code == down){ // Increase or decrease
-            if (code == up) { val++ }
-            else            { val-- }
-            el.value = val
-        }
-    }
-    return val
 }

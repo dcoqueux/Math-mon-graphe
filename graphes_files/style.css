@@ -2,8 +2,6 @@ body {
 	background-color: #eee;
 	color: #333;
 	font-family: 'Helvetica Neue', Helvetica, sans-serif;
-	text-align: center;
-	/*overflow: hidden; /* temp? */
 }
 
 .container {
@@ -28,8 +26,16 @@ canvas {
 	-webkit-box-shadow: 2px 2px 5px #999;
 }
 
-p.field {
-	clear: left;
+.infoboxbtn {
+	float: right;
+}
+
+.btn-label {
+	display: inline;
+}
+
+.fa {
+	display: none;
 }
 
 h1 {
@@ -38,6 +44,15 @@ h1 {
 	font-weight: normal;
 	font-size: 125%;
 	color: #999;
+	text-align: center;
+}
+
+#info h2 {
+	margin-bottom: 15px;
+}
+
+#info p {
+	margin-bottom: 5px;
 }
 
 .panel {
@@ -56,52 +71,12 @@ h1 {
 	margin-top: 0;
 }
 
-.panel .message {
-	text-align: center;
-	color: #666;
-}
-
 .panel h2, .panel .title, .panel .selection {
 	font-size: 100%;
 	font-weight: bold;
 	color: #999;
 	text-transform: uppercase;
 	margin: 0;
-}
-
-.panel .col {
-	float: left;
-	margin: 0 20px 0 0;
-}
-
-.panel p {
-	margin: .5em 0;
-}
-
-.panel p label, .panel p span.i, .panel p span.info {
-	display: block;
-	float: left;
-	width: 5em;
-	vertical-align: middle;
-}
-
-.panel p span label {
-	display: inline;
-	float: none;
-	width: auto;
-}
-
-.panel .sequence .sorted {
-	display: none;
-	color: #009;
-}
-
-.panel .sequence:hover .unsorted {
-	display: none;
-}
-
-.panel .sequence:hover .sorted {
-	display: inline;
 }
 
 .panel ul.elements {
@@ -150,10 +125,15 @@ h1 {
 	text-transform: uppercase;
 }
 
-#graphs ul.elements, #styles ul.elements {
-	max-height: 150px;
-}
-
 #elements ul.elements {
 	max-height: 300px;
+}
+
+@media (max-width: 992px) {
+	.fa {
+		display: inline-block;
+	}
+	.btn-label {
+		display: none;
+	}
 }
