@@ -6,13 +6,7 @@ $(document).ready(function(){
     canvas_elt = $("canvas")
     canvas     = canvas_elt.get(0)
     context    = canvas.getContext("2d")
-    var scale  = 1
-    
-    // Canvas settings
-    context.scale(scale, scale)
-    context.font         = "30px Verdana"
-    context.textAlign    = "center"
-    context.textBaseline = "middle"
+    context.scale(1, 1)
     
     // Elements
     ui.properties = $("#info")

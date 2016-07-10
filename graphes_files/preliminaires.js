@@ -20,10 +20,7 @@ var touch     = "createTouch" in document
 var click     = touch ? "tap" : "click"
 var elt_id    = 1
 
-var vertices  = [],
-    edges     = [],
-    states    = [], // For undos/redos
-    graph     = null
+var graph     = null
 
 var canvas_elt = null,
     canvas     = null,
@@ -55,7 +52,7 @@ var RAYON_NOEUD = 15
 function ElementStyle(strokecolor, fillcolor, strokewidth){
     if(typeof strokewidth  != nb || strokewidth  <= 0){ strokewidth  = 1.2 }
 
-    this.id           = ++elt_id
+    //this.id           = ++elt_id
     this.shape        = "circle"
     this.strokecolor  = strokecolor
     this.fillcolor    = fillcolor
@@ -63,17 +60,48 @@ function ElementStyle(strokecolor, fillcolor, strokewidth){
     this.vertexradius = RAYON_NOEUD
 }
 
-function styleContext(cx, style, fill){
+function styleContext(style, fill){
     if(typeof fill != bool){ fill = true }
-    cx.strokeStyle = style.strokecolor
-    if(fill){ cx.fillStyle = style.fillcolor }
-    cx.lineWidth   = style.strokewidth
+    context.strokeStyle = style.strokecolor
+
+    if(fill){ context.fillStyle = style.fillcolor }
+    context.lineWidth = style.strokewidth
 }
 
 var defaultStyle  = new ElementStyle("#000", "#fff")
 var selectedStyle = new ElementStyle("rgba(39,166,255,0.5)", "transparent", 5)
 var labelStyle    = new ElementStyle("transparent", "#fff", 0)
 
+
+// Gestion des fenêtres modales ---------------------------------------------------------
+
+$(document).ready(function() {
+
+    $(" #createVertex ").on("click", function() {
+        var v = graph.addVertex(
+            [parseInt($("#vertexX").val()), parseInt($("#vertexY").val())], $("#vertexName").val())
+
+        if( $("#vertexautocomplete").is(":checked") ) { 
+            graph.semiComplete(v)
+            updateState(false)
+        } else {
+            clearUimode()
+        }
+
+        $(" #vertexName ").val('')
+        $( "#modalCreationVertex" ).modal('hide');
+    });
+
+    $(" #vertexName ").on("keypress", function(args) {
+        if (args.keyCode == 13 && $(" #modalCreationVertex ").hasClass('in')) {
+            $(" #createVertex ").click();
+        }
+    });
+
+    $(" #createEdge ").on("click", function() {
+
+    });
+})
 
 // Fonctions utiles ---------------------------------------------------------------------
 
@@ -90,7 +118,7 @@ function dlog(x){
 }
 function oc(a){ 
     var o = {}; 
-    for (var i=0;i<a.length;i++) { 
+    for (var i=0; i<a.length; i++) { 
         o[a[i]] = ""; 
     } 
     return o 

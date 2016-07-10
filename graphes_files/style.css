@@ -26,6 +26,11 @@ canvas {
 	-webkit-box-shadow: 2px 2px 5px #999;
 }
 
+.table, .table th {
+	text-align: center;
+	vertical-align: center;
+}
+
 .infoboxbtn {
 	float: right;
 }

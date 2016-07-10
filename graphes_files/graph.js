@@ -10,8 +10,8 @@ function getElement(x, y){
 
     // Un noeud ?
 
-    for(var i = vertices.length - 1; i >= 0; i--){
-        el = vertices[i]
+    for(var i = graph.vertices.length - 1; i >= 0; i--){
+        el = graph.vertices[i]
         r  = el.style.vertexradius * (touch ? 3 : 1.5)
         //w  = el.style.strokewidth
         if(Math.abs(x - el.x) <= r && Math.abs(y - el.y) <= r) {
@@ -262,13 +262,10 @@ function canvasKey(evt){
  */
 function startAddEdge(cx){
     var panel = ui.properties
-
     // Infobox
-    var msg   = $('<h2>Nouvelle arête</h2>' +
-        '<p>Cliquez sur deux noeuds à lier par une nouvelle arête. ' +
-        '<a href="javascript://">Retour</a></p>')
+    var msg = $(htmlMessages.nvlArete)
     
-    $("a", msg).click(function(){ 
+    $("#cancelEdge", msg).click(function(){ 
         setUimode(GJ_TOOL_SELECT); 
         tmp_edge = [null,null]; updateState();
     })
@@ -286,22 +283,16 @@ function startAddEdge(cx){
  */
 function startAddVertex(cx){
     var panel = ui.properties
-    var msg   = $('<h2>Add vertex</h2>' +
-        '<p>Click anywhere on the canvas to place a vertex.<a href="javascript://"> Back</a></p>' +
-        '<p><span>' +
-        '<input type="checkbox" id="vertexautocomplete">' +
-        '<label for="vertexautocomplete">Auto-complete graph</label>' +
-        '</span></p>'
-    )
+    var msg   = $(htmlMessages.nvNoeud)
 
     // Enclenche la génération automatique d'arêtes autour du nouveau noeud
-    $("a", msg).click(function(){ 
+    $("#cancelVertex", msg).click( function(){ 
         setUimode(GJ_TOOL_SELECT); 
         updateState(); 
     })
 
-    selected  = [null]
-    tmp_edge        = [null,null]
+    selected = [null]
+    tmp_edge = [null,null]
     updateState(false)
     panel.empty().append(msg)
     setUimode(GJ_TOOL_ADD_VERTEX)
@@ -313,7 +304,7 @@ function startAddVertex(cx){
  */
 function finishAddEdge(cx){
     if(uimode == GJ_TOOL_ADD_EDGE && tmp_edge[0] instanceof Vertex && tmp_edge[1] instanceof Vertex){
-        graph.addEdge(tmp_edge, cx)
+        graph.addEdge(tmp_edge)
         dlog(["Arête créée"])
         clearUimode()
     }
@@ -325,15 +316,9 @@ function finishAddEdge(cx){
  */
 function finishAddVertex(x, y, cx){
     if(x >= 0 && y >= 0){
-        var value = prompt("Nom du nouveau noeud ?")
-        var v = graph.addVertex([x,y], value, cx)
-
-        if( $("#vertexautocomplete").is(":checked") ) { 
-            graph.semiComplete(v)
-            updateState(false)
-        } else {
-            clearUimode()
-        }
+        $("#vertexX").val(x);
+        $("#vertexY").val(y);
+        $( "#modalCreationVertex" ).modal('show');
     }
 }
 
@@ -343,51 +328,31 @@ function finishAddVertex(x, y, cx){
 /*
  *  Dessine l'intégralité d'un graphe
  */
-function drawAll(cx) {
+function drawAll() {
     // dlog("DRAWING ALL")
-    if(!cx){ cx = context }
-
     // Nettoyage du canvas
-    cx.clearRect(0, 0, canvas.width, canvas.height)
+    context.clearRect(0, 0, canvas.width, canvas.height)
 
     var el
-    graph.draw(cx)
+    graph.draw()
 
     // Selected item
     if(selected.length > 0){
         for(var n in selected){
             el = selected[n]
             if(el instanceof Vertex){// || el instanceof Edge){
-                el.drawSel(cx)
+                el.drawSel()
             }
             if(el instanceof Edge){
                 // Get edgegroup
                 var g = graph.edgeGroups(el.groupName())
                 for(var i in g){
                     if(g[i] == el){
-                        g[i].drawSel(cx, g.length, i)
+                        g[i].drawSel(g.length, i)
                     }
                 }
             }
         }
-    }
-}
-
-
-/*
- *  Affiche l'étiquette d'un noeud ou d'une arête
- */
-function drawLabel(cx, label, x, y){
-    if(!cx){ cx = context }
-    if((typeof label == str || typeof label == nb) && label !== ""){
-        styleContext(cx, labelStyle)
-        cx.beginPath()
-        cx.arc(x, y, 10 /*labelStyle.vertexradius*/, 0, 2*Math.PI, true)
-        cx.closePath()
-        cx.fill()
-        cx.stroke()
-        cx.fillStyle = "#000"
-        cx.fillText(label, x, y)
     }
 }
 
@@ -414,7 +379,7 @@ function touchMove(evt){
  */
 function touchEnd(evt){
     dragging = false
-    tmp_edge       = [null,null]
+    tmp_edge = [null, null]
     var ct   = evt.changedTouches
     if(!moved && ct.length == 1 && ct[0].target == canvas){
         canvasClick({ clientX: ct[0].pageX, clientY: ct[0].pageY })
@@ -460,7 +425,7 @@ function setUimode(mode){
  */
 function clearUimode(){
     setUimode(GJ_TOOL_SELECT)
-    tmp_edge       = [null,null]
+    tmp_edge = [null, null]
     selected = [null]
     updateState()
 }
@@ -479,10 +444,7 @@ function setSelected(el, evt, cx){
     if(el == null || el instanceof Vertex || el instanceof Edge){
         if(selected.length <= 0 || (selected.length > 0 && el != selected[0])){
             if(selected.length > 0 && shift){
-                ui.properties.html(
-                    '<button class="btn btn-sm btn-danger infoboxbtn">Supprimer sélection</button>' +
-                    '<h2>Multiselection</h2>'
-                )
+                ui.properties.html(htmlMessages.multiselection)
             } else {
                 // Sélection simple : affichage des propriétés de l'élément
                 displayInfo(ui.properties, el, cx)
@@ -503,9 +465,7 @@ function setSelected(el, evt, cx){
  */
 function clearCanvas(cx, force){
     if(force || confirm("Voulez-vous supprimer le graphe actuel ? L'action est irréversible.")) {
-        edges    = [];
-        vertices = [];
-        graph    = null;
+        graph.detach();
         new Graph();
         selected = [null]
         updateState()
@@ -519,11 +479,11 @@ function clearCanvas(cx, force){
  */
 function removeElement(el, graph, cx){
     var type_elt = el instanceof Vertex ? "du noeud" : "de l'arête";
-    dlog("Remove " + type_elt);
+    dlog("Suppression " + type_elt);
 
     var rep = confirm("Vous confirmez la suppression " + type_elt + "?")
     if (rep) {
-        graph.detachChild(el)
+        el.detach();
         updateState()
     }
     return rep
@@ -534,36 +494,43 @@ function removeElement(el, graph, cx){
  *  TODO : inclure cette méthode dans la classe Graph et utiliser loadGraphFromJson
  */
 function graphFromJSON(json){
-    if(typeof json != str){ return null }
+    if (typeof json != str) { return null }
+    var saveGraph = graph;
+
     try {
-        var o = JSON.parse(json)
-    } catch(e){
+        var obj = JSON.parse(json)
+        graph.detach();
+        new Graph();
+
+        var v, from, to
+
+        for(var i in obj.vertices){
+            vertex = obj.vertices[i]
+            graph.addVertex([vertex.x, vertex.y], vertex.value);
+        }
+
+        for(var i in obj.edges){
+            edge = obj.edges[i]
+
+            // Trouver un moyen de faire le lien noeud / arête
+            /*for(var i in graph.vertices){
+                v = graph.vertices[i]
+                if(v.id == edge.from){
+                    from = v
+                }
+                if(v.id == edge.to){
+                    to = v
+                }
+            }*/
+            graph.addEdge([from, to])
+        }
+
+    } catch(e) {
+        graph = saveGraph;
         return null
     }
-    var vertices = [], edges = [], j, v, from, to
-    for(var i in o.vertices){
-        j = o.vertices[i]
-        vertices.push(new Vertex(j.id, j.value, j.x, j.y))
-        // { id: this.id, value: this.value, x: this.x, y: this.y }
-    }
-    for(var i in o.edges){
-        j = o.edges[i]
-        for(var i in vertices){
-            v = vertices[i]
-            if(v.id == j.from){
-                from = v
-            }
-            if(v.id == j.to){
-                to   = v
-            }
-        }
-        edges.push(new Edge(j.id, j.value, from, to, j.directed))
-        // { id: this.id, value: this.value, from: this.from.id, to: this.to.id }
-    }
-    var g = new Graph(vertices, edges)
-    g.x   = o.x
-    g.y   = o.y
-    return g
+
+    return graph
 }
 
 
@@ -577,7 +544,7 @@ function loadGraphFromJSON() {
         clearCanvas(context, true); 
         graph = null; 
         graphFromJSON(json); 
-        drawAll(context);
+        drawAll();
     }
 }
 
@@ -619,10 +586,7 @@ function displayInfo(panel, el, cx){
     if (el instanceof Array) {
         el = trimArray(el)
         if (el.length > 1) {
-            panel.html(
-                '<button class="btn btn-sm btn-danger infoboxbtn">Supprimer sélection</button>' +
-                '<h2>Multiselection</h2>'
-            )
+            panel.html(htmlMessages.multiselection)
             return
         } else {
             el = el[0]
@@ -632,35 +596,12 @@ function displayInfo(panel, el, cx){
     if(el != null){
         // ===== Infobox Noeud =====
         if(el instanceof Vertex){
-            var info = $(
-                '<div>' +
-                    '<button class="btn btn-sm btn-danger removebtn infoboxbtn">Supprimer noeud</button>' +
-                    '<h2>Noeud ' + he(el.value) + '</h2>' +
-                    '<p>' +
-                        '<label for="label">Nom : </label>' +
-                        '<input type="text" id="label" size="3" value="' + he(el.value) + '" autocapitalize="off">' +
-                    '</p>' +
-                    '<p class="field"><span class="i">Degré : </span>' + he(el.degree) + '</p>' +
-                '</div>'
-            )
+            var info = $(formatInfoboxVertex(el))
         }
         // ===== Infobox Arête =====
         else if(el instanceof Edge){
-            var info = $(
-                '<div>' +
-                    '<div class="btn-group btn-group-sm infoboxbtn">' +
-                        '<button class="btn btn-warning contractbtn" title="Fusionne les noeuds liés par l\'arête">Contracter arête</button>' +
-                        '<button class="btn btn-danger removebtn">Supprimer arête</button>' +
-                    '</div>' +
-                    '<h2>Arête [' + he(el.from.value) + ' -> ' + he(el.to.value) + ']</h2>' +
-                    '<p>' +
-                        '<label for="label">Poids : </label>' +
-                        '<input type="text" id="label" size="3" value="' + he(el.value) + '">' +
-                    '</p>' +
-                    '</div>' +
-                '</div>'
-            )
-            $(".contractbtn", info).click(function(){ graph.contractEdge(el); updateState() })
+            var info = $(formatInfoboxEdge(el))
+            $(".contractbtn", info).click(function(){ el.contract(); updateState() })
         }
         $("input#label", info).keyup (function(){ el.value = this.value; drawAll() })
         $("input#label", info).change(function(){ el.value = this.value; updateState() })
@@ -668,16 +609,7 @@ function displayInfo(panel, el, cx){
 
     // ===== Infobox Graphe =====
     } else {
-        var info  = $(
-            // Graph info
-            '<div>' +
-                '<button class="btn btn-sm btn-success adjustbtn infoboxbtn" title="Replace les noeuds dans le canvas">Réajuster graphe</button>' +
-                '<h2>Graphe</h2>' +
-                '<p><span>Nb de noeuds: </span>' + graph.vertices.length + '</p>' +
-                '<p><span>Nb d\'arêtes: </span>' + graph.edges.length + '</p>' +
-                '<p><span>Complet ? </span>' + (graph.isComplete() ? "Oui" : "Non") + '</p>' +
-            '</div>'
-        )
+        var info  = $(formatInfoboxGraph())
         $(".adjustbtn", info).click(function(){ graph.readjust(); updateState(); })
     }
     panel.empty().append(info)
@@ -698,7 +630,7 @@ function displayElements(panel){
             elt = graph.vertices[i]
             list += '<li id="vertex-' + i + '"' + 
                 (inArray(elt, selected) ? ' class="selected"' : '') + '>' +
-                '<a href="javascript://">Noeud ' + he(elt.value) + '</a></li>'
+                '<a>Noeud ' + he(elt.value) + '</a></li>'
         }
     }
     // Arêtes
@@ -707,8 +639,8 @@ function displayElements(panel){
         for(var i in graph.edges){
             elt = graph.edges[i]
             list += '<li id="edge-' + i + '"' + (inArray(elt, selected) ? ' class="selected"' : '') + '>'
-                + '<a href="javascript://">Arête '
-                + (elt.directed ? '[' + he(elt.from.value) + ' -> ' + he(elt.to.value) + ']' :
+                + '<a>Arête '
+                + (graph.directed ? '[' + he(elt.from.value) + ' -> ' + he(elt.to.value) + ']' :
                     '(' + he(elt.from.value) + ', ' + he(elt.to.value) + ')')
                 + (elt.value != "" ? ' (Poids : ' + he(elt.value) + ')' : '') 
                 + '</a></li>'

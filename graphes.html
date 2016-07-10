@@ -19,6 +19,7 @@
 
         <!-- Scripts persos -->
         <script type="text/javascript" src="./graphes_files/preliminaires.js"></script>
+        <script type="text/javascript" src="./graphes_files/messages.js"></script>
         <script type="text/javascript" src="./graphes_files/classes.js"></script>
         <script type="text/javascript" src="./graphes_files/graph.js"></script>
         <script type="text/javascript" src="./graphes_files/main.js"></script>
@@ -115,6 +116,30 @@
                             <p class="field"><span class="i">Degree: </span>2</p>
                         </div>
                         -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fenêtres modales -->
+
+        <div class="modal fade" id="modalCreationVertex">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Création de noeud</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Pour finir, il faut nommer ce noeud. Comment voulez-vous l'appeler ?</p>
+                        <input type="hidden" id="vertexX"/>
+                        <input type="hidden" id="vertexY"/>
+                        <div class="input-group">
+                            <input type="text" id="vertexName" class="form-control" autofocus>
+                            <span class="input-group-btn">
+                                <button type="button" id="createVertex" class="btn btn-primary">Valider</button>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
