@@ -4,70 +4,56 @@
 
 /*
  *  Retrouve un élément du graphe à partir des coordonnées en argument
+ *  TODO : REVOIR URGEMMENT CETTE FONCTION AVEC LES MODIFICATIONS DE LA METHODE Edge._draw
  */
 function getElement(x, y){
     var el, r
 
     // Un noeud ?
-
     for(var i = graph.vertices.length - 1; i >= 0; i--){
         el = graph.vertices[i]
         r  = el.style.vertexradius * (touch ? 3 : 1.5)
-        //w  = el.style.strokewidth
         if(Math.abs(x - el.x) <= r && Math.abs(y - el.y) <= r) {
             return el
         }
     }
     
-    // Arêtes : Approche selon les courbes de Bezier
-
-    var tol = 3 // Tolerance = distance max à la souris
-    var edgegroups = graph.edgeGroups()
+    // Une arête ? Approche selon les courbes de Bezier
+    // Tolerance = distance max à la souris
+    var tol = 3 
     // We find points on e with distance h (in pixels)
     var h = 5
+    var edgegroups = graph.edgeGroups()
     
     for(var s in edgegroups){
-        //alert("Here")
-        g = edgegroups[s]
-        for(var i in g){
-                // Now we have edge e
-                var e = g[i]
-                // There is "total" edges in this group
-                var total = g.length
-                // This is number "i" of them
-                // Edge curvature
-            var space = 150
-            var span  = (total-1) * space
-            var bend  = -span/2 + i*space
+        var group = edgegroups[s]
 
-            // Curved edge, part of multiedge
-            // Curve from a to b, with control point alpha.
-            // m is the midpoint of ab
-                if(e.from.x < e.to.x) {
-                var ax = e.from.x
-                var ay = e.from.y
-                var bx = e.to.x
-                var by = e.to.y
-            } else {
-                var ax = e.to.x
-                var ay = e.to.y
-                var bx = e.from.x
-                var by = e.from.y
-            }
-            var mx = ax + 0.5 * (bx - ax)
-            var my = ay + 0.5 * (by - ay)
-            
-            // Length of am, since we need to normalize it
-            var l = Math.sqrt((ay-by)*(ay-by) + (bx-ax)*(bx-ax))
+        for(var i in group){
+            var edge = group[i]
+
+            // Paramètres de l'incurvation de l'arête
+            var bend  = (-(group.length-1) * EDGE_SPACE/2 + i * EDGE_SPACE) * (edge.groupName()[0] != edge.from.value ? -1 : 1)
+            var incl  = Math.atan((edge.to.y - edge.from.y)/(edge.to.x - edge.from.x))
+            var coeff = (edge.to.x < edge.from.x) ? -1 : 1
+            // Noeud A : noeud de départ
+            var ax = edge.from.x + RAYON_NOEUD * Math.cos(incl) * coeff
+            var ay = edge.from.y + RAYON_NOEUD * Math.sin(incl) * coeff
+            // Noeud B : noeud d'arrivée
+            var bx = edge.to.x - RAYON_NOEUD * Math.cos(incl) * coeff
+            var by = edge.to.y - RAYON_NOEUD * Math.sin(incl) * coeff
+
+            var mx = 0.5 * (bx + ax)
+            var my = 0.5 * (by + ay)
+            var lg_AB = Math.sqrt(Math.pow(ay - by, 2) + Math.pow(bx - ax, 2))
 
             // Find the center point of the quadrature
-            var alphax = mx + bend * (-my+ay)/l
-            var alphay = my + bend * (mx-ax)/l
+            var alphax = mx + bend * (-my + ay) / lg_AB
+            var alphay = my + bend * ( mx - ax) / lg_AB
             
             // Now we have the following function of the quadratic curve Q(t)
             // Q(t) = (1-t)^2 a + 2(1-t)t alpha + t^2 b, where t = 0..1
             // Compute each of the d points
-            var n = l*2 // length of ab
+            var n = 2 * lg_AB
 
             // Take n/h steps of length h
             for (var j = 0; j < n; j += h) {
@@ -79,9 +65,8 @@ function getElement(x, y){
                 var Qy = (1-t)*(1-t) * ay + 2*(1-t)*t * alphay + t*t * by
                 
                 distToMouse = Math.sqrt((Qy-y)*(Qy-y) + (Qx-x)*(Qx-x))
-
                 if (distToMouse < tol) {
-                    return e
+                    return edge
                 }
             }
         }
@@ -329,27 +314,26 @@ function finishAddVertex(x, y, cx){
  *  Dessine l'intégralité d'un graphe
  */
 function drawAll() {
-    // dlog("DRAWING ALL")
     // Nettoyage du canvas
     context.clearRect(0, 0, canvas.width, canvas.height)
 
     var el
     graph.draw()
 
-    // Selected item
-    if(selected.length > 0){
-        for(var n in selected){
-            el = selected[n]
-            if(el instanceof Vertex){// || el instanceof Edge){
-                el.drawSel()
-            }
-            if(el instanceof Edge){
-                // Get edgegroup
-                var g = graph.edgeGroups(el.groupName())
-                for(var i in g){
-                    if(g[i] == el){
-                        g[i].drawSel(g.length, i)
-                    }
+    // Les éléments sélectionnés ont une surchage de dessin spéciale
+    for(var n in selected){
+        el = selected[n]
+
+        if(el instanceof Vertex){
+            el.drawSel()
+        }
+
+        if(el instanceof Edge){
+            // Get edgegroup
+            var g = graph.edgeGroups(el.groupName())
+            for(var i in g){
+                if(g[i] == el){
+                    g[i].drawSel(g.length, i)
                 }
             }
         }

@@ -44,6 +44,7 @@ var GJ_TOOL_SELECT          = 0, // Mode manipulation du graphe
     GJ_TOOL_SELECT_EDGE     = 4 // Mode sélection de noeud
 
 var RAYON_NOEUD = 15
+var EDGE_SPACE = 150
 
 
 // Style -------------------------------------------------------------------------------

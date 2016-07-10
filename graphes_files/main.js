@@ -2,7 +2,7 @@
 
 $(document).ready(function(){
     
-    // Variables (I really need to move these out of global scope...)
+    // Variables
     canvas_elt = $("canvas")
     canvas     = canvas_elt.get(0)
     context    = canvas.getContext("2d")
@@ -31,7 +31,7 @@ $(document).ready(function(){
 
     // Drag and drop
     canvas_elt.mousedown( function(){ dragging = true }  )
-    $("body").mouseup( function(){ dragging = false } )
+    canvas_elt.mouseup( function(){ dragging = false; updateState() } )
     // Sur le canvas
     canvas_elt.mousemove(canvasMove)
     canvas_elt.click(canvasClick)

@@ -24,7 +24,6 @@ function Graph(){
     this.addVertex = function(v, value){
         if (v instanceof Array && v.length == 2) {
             v = new Vertex(elt_id++, value, v[0], v[1])
-            v.update(this)
             this.draw(context)
             this.cmpltd = false
             return v
@@ -40,7 +39,6 @@ function Graph(){
         }
 
         if (e instanceof Edge && inArray(e.from, this.vertices) && inArray(e.to, this.vertices)) {
-            e.update(this)
             this.draw(context)
             this.cmpltd = false
             return e
@@ -49,18 +47,22 @@ function Graph(){
     }
     
     this.draw = function() {
-        //dlog(["Drawing graph"])
+        // Dessin des arêtes
+        // Groupes d'arêtes reliant les memes noeuds
         var edgegroups = this.edgeGroups()
-        var g
+        var group
+        var reverse
 
-        // TODO : Clarifier cette boucle !!!
-        for(var s in edgegroups){
-            g = edgegroups[s]
-            for(var i in g){
-                g[i].draw(g.length, i)
+        for (var i in edgegroups) {
+            group = edgegroups[i]
+
+            // Dessin par groupe pour les courbures si arête adjacence multiple
+            for(var j in group){
+                group[j].draw(group.length, j)
             }
         }
 
+        // Dessin des noeuds
         for(var i in this.vertices){
             this.vertices[i].draw()
         }
@@ -229,7 +231,6 @@ function Graph(){
             v = this.vertices[i]
             if(v instanceof Vertex){
                 v.edges  = []
-                v.update(this)
             }
         }
         for(var i in this.vertices){
@@ -328,22 +329,17 @@ function Vertex(id, value, x, y){
         context.fillText(this.weigh, this.x - (RAYON_NOEUD + 10), this.y - (RAYON_NOEUD + 10))
     }
     
-    this.update    = function(graph){
-        // Update various properties
-        this.degree = this.edges.length
-    }
-    
     this.toJSON    = function(){
         return { id: this.id, value: this.value, x: this.x, y: this.y } // No style support yet
     }
     
     this.isNeighbour = function(v){
-        var e
+        var edge
         for(var i in this.edges){
-            e = this.edges[i]
+            edge = this.edges[i]
             if(
-                (e.from === this && e.to   === v) ||
-                (e.to   === this && e.from === v)
+                (edge.from === this && edge.to   === v) ||
+                (edge.to   === this && edge.from === v)
             ){
                 return true
             }
@@ -449,12 +445,11 @@ function Edge(id, value, from, to){
      * i : index de l'arete parmi l'ensemble des aretes communes à deux memes noeuds
      */
     this._draw   = function(style, total, i){
-        if(typeof total == undef || total <= 0){ total = 1 }
-        if(typeof i     == undef || i     <  0){ i     = 0 }
+        if (typeof total == undef || total <= 0) { total = 1 }
+        if (typeof i == undef || i < 0) { i = 0 }
         
-        // Détermination de l'incurvation de l'arête
-        var space = 150
-        var t     = - (total-1) * space /2 + i*space
+        // Paramètres de l'incurvation de l'arête
+        var t     = (i * EDGE_SPACE - (total-1) * EDGE_SPACE / 2) * (this.groupName()[0] != this.from.value ? -1 : 1)
         var incl  = Math.atan((this.to.y - this.from.y)/(this.to.x - this.from.x))
         var coeff = (this.to.x < this.from.x) ? -1 : 1
         // Noeud A : noeud de départ
@@ -470,23 +465,17 @@ function Edge(id, value, from, to){
         context.beginPath()
         context.moveTo(ax, ay)
         
-        if(t == 0){
-            // Arête rectiligne : arête unique ou arête médiane
-            context.lineTo(bx, by)
-        } else {
-            // Arête courbée : l'arête entre les 2 noeuds n'est pas unique
+        // Alpha : Centre de l'arc, milieu du segment AB "translaté" orthogonalement
+        var mx = 0.5 * (bx + ax)
+        var my = 0.5 * (by + ay)
+        var lg_AB = Math.sqrt(Math.pow(ay - by, 2) + Math.pow(bx - ax, 2))
+        
+        var alphax = mx + t * (-my + ay) / lg_AB
+        var alphay = my + t * ( mx - ax) / lg_AB
 
-            // Alpha : Centre de l'arc, milieu du segment AB "translaté" orthogonalement
-            var mx = 0.5 * (bx + ax)
-            var my = 0.5 * (by + ay)
-            var lg_AB = Math.sqrt(Math.pow(ay - by, 2) + Math.pow(bx - ax, 2))
-            
-            var alphax = mx + t * (-my + ay) / lg_AB
-            var alphay = my + t * (mx - ax) / lg_AB
-
-            // Trace l'arc jusqu'à B en passant par alpha
-            context.quadraticCurveTo(alphax, alphay, bx, by)
-        }
+        // Trace l'arc jusqu'à B en passant par alpha
+        // quadraticCurve : arc courbée si arête multiple entre deux noeuds, rectiligne sinon
+        context.quadraticCurveTo(alphax, alphay, bx, by)
         context.stroke();
         
         /*if (graph.directed) {
@@ -512,39 +501,46 @@ function Edge(id, value, from, to){
         context.fillText(this.value, alphax, alphay)
     }
     
-    this.update  = function(graph){}
-    
     // Supprime l'arête et fusionne les noeuds adjacents liés par l'arête
+    // Le noeud de départ est conservé
     this.contract = function(){
-        var e
+        var edge
         this.detach()
-        dlog(this.from.edges)
 
+        // Avant sa suppression, on récupère les arêtes du noeud
         for(var i in this.to.edges){
-            e = this.to.edges[i]
-            if(e.to == this.to){
-                e.to = this.from
+            edge = this.to.edges[i]
+
+            // Arêtes entrantes
+            if(edge.to == this.to){
+                edge.to = this.from
+                if (graph.oriented) {
+                    this.from.degree--
+                } else {
+                    this.from.degree++
+                }
             }
-            if(e.from == this.to){
-                e.from = this.from
+            // Arêtes sortantes
+            if(edge.from == this.to){
+                edge.from = this.from
+                this.from.degree++
             }
-            if(e.from == e.to){ // Contracted into nonexistance
-                this.to.edges.splice(i, 1)
-                e.detach()
-                i--
+
+            // Les arêtes du même groupe que celle contractante est une boucle
+            // Pour l'instant, suppression
+            if(edge.from == edge.to){
+                edge.detach()
             }
-            this.from.edges.push(e)
+
+            // Récupération après réaffectation
+            this.from.edges.push(edge)
         }
 
-        dlog(this.from.edges)
-        this.to.edges = []
-        this.to.update()
-        this.to.detach()
-
         dlog(["Fusion des noeuds", this.from.value, this.to.value])
+        this.to.edges = []
+        this.to.detach()
         this.from.x = 0.5 * (this.from.x + this.to.x)
         this.from.y = 0.5 * (this.from.y + this.to.y)
-        this.from.update()
     }
     
     this.toJSON  = function(){
@@ -556,10 +552,14 @@ function Edge(id, value, from, to){
         }
     }
     
+    // Retourne un nom de groupe pour les arêtes reliant les mêmes noeuds
     this.groupName = function(){
         var a = this.from.id, b = this.to.id
-        var c = (a <= b)
-        return (c ? a : b) + "," + (c ? b : a)
+        if (a <= b) {
+            return a + "," + b
+        } else {
+            return b + "," + a
+        }
     }
     
     this.attach()
