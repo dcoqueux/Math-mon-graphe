@@ -99,8 +99,9 @@ $(document).ready(function() {
         }
     });
 
-    $(" #createEdge ").on("click", function() {
-
+    $(document).on("click", "#btn-oriente", function() {
+        graph.directed = !graph.directed;
+        updateState();
     });
 })
 
@@ -111,7 +112,7 @@ function is_undefined(x){
     return typeof x == undef
 }
 
-// Afficher un log
+// Afficher un log. A UTILISER POUR LE DEBUG
 function dlog(x){ 
     if("console" in window && window.console.log) { 
         console.log(x) 

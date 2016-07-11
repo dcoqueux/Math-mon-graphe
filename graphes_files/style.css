@@ -53,6 +53,7 @@ h1 {
 }
 
 #info h2 {
+	margin-top: 5px;
 	margin-bottom: 15px;
 }
 
@@ -64,7 +65,7 @@ h1 {
 	background-color: #e8e8e8;
 	border: 1px solid #ddd;
 	text-align: left;
-	padding: 15px 20px;
+	padding: 10px 20px;
 	margin-bottom: 5px;
 	overflow: hidden;
 	border-radius: 6px;
@@ -134,7 +135,7 @@ h1 {
 	max-height: 300px;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1000px) {
 	.fa {
 		display: inline-block;
 	}

@@ -56,6 +56,7 @@ $(document).ready(function(){
     $( "#btnload"  ).click(function(){ loadGraphFromJSON() })
     $( "#btnsave"  ).click(function(){ saveGraphToJSON() })
     $( "#btnclear" ).click(function(){ clearCanvas(context) })
+    $( "#btnmatrice" ).click(function(){  })
     
     // Resize
     $(window).resize(updateState)

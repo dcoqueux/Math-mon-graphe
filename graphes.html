@@ -77,10 +77,10 @@
                     <div id="elements" class="panel">
                         <h2>Eléments du graphe</h2>
                         <ul class="elements">
-                            <li class="h">Noeuds</li>
+                            <li class="h">Noeuds Test</li>
                             <li id="vertex-3" class="selected"><a href="javascript://">Noeud A</a></li>
                             <li id="vertex-2" ><a href="javascript://">Noeud B</a></li>
-                            <li class="h">Arêtes</li>
+                            <li class="h">Arêtes Test</li>
                             <li id="edge-0"><a href="javascript://">Arête (A,B)</a></li>
                         </ul>
                     </div>
@@ -95,7 +95,7 @@
                             <i class="fa fa-info"></i>
                             <span class="btn-label"> Infobox</span>
                         </button>
-                        <button class="btn btn-secondary" title="Affiche la matrice du graphe courant">
+                        <button id="btnmatrice" class="btn btn-secondary" title="Affiche la matrice du graphe courant">
                             <i class="fa fa-th"></i>
                             <span class="btn-label"> Matrice d'adjacence</span>
                         </button>
@@ -103,19 +103,12 @@
                             <i class="fa fa-map-signs"></i>
                             <span class="btn-label"> Marche aléatoire</span>
                         </button>
+                        <button class="btn btn-secondary" title="Recherche du plus court chemin">
+                            <i class="fa fa-rocket"></i>
+                            <span class="btn-label"> Algorithme de Djikstra</span>
+                        </button>
                     </div>
                     <div id="info" class="panel">
-                        <!-- Exemple 
-                        <div>
-                            <h2>Noeud</h2>
-                            <button class="r button removebtn" href="javascript://">Supprimer noeud</button>
-                            <p class="field">
-                                <label for="label">Poids: </label>
-                                <input type="text" id="label" size="3" value="4">
-                            </p>
-                            <p class="field"><span class="i">Degree: </span>2</p>
-                        </div>
-                        -->
                     </div>
                 </div>
             </div>
@@ -124,7 +117,7 @@
         <!-- Fenêtres modales -->
 
         <div class="modal fade" id="modalCreationVertex">
-            <div class="modal-dialog" role="document">
+            <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -140,6 +133,23 @@
                                 <button type="button" id="createVertex" class="btn btn-primary">Valider</button>
                             </span>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalSaveGraph">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Sauvegarder le graphe</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Voici une description du graphe en JSON. Copiez-collez dans un fichier texte</p>
+                        <textarea id="json-area" class="form-control" rows="10"></textarea>
+                        <br/>
+                        <button type="button" class="btn btn-primary">Ok merci !</button>
                     </div>
                 </div>
             </div>
