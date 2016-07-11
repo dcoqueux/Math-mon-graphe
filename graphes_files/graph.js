@@ -4,7 +4,6 @@
 
 /*
  *  Retrouve un élément du graphe à partir des coordonnées en argument
- *  TODO : REVOIR URGEMMENT CETTE FONCTION AVEC LES MODIFICATIONS DE LA METHODE Edge._draw
  */
 function getElement(x, y){
     var el, r
@@ -20,9 +19,8 @@ function getElement(x, y){
     
     // Une arête ? Approche selon les courbes de Bezier
     // Tolerance = distance max à la souris
-    var tol = 3 
-    // We find points on e with distance h (in pixels)
-    var h = 5
+    var tol = 5 
+    var pitch = 5
     var edgegroups = graph.edgeGroups()
     
     for(var s in edgegroups){
@@ -30,41 +28,22 @@ function getElement(x, y){
 
         for(var i in group){
             var edge = group[i]
-
-            // Paramètres de l'incurvation de l'arête
-            var bend  = (-(group.length-1) * EDGE_SPACE/2 + i * EDGE_SPACE) * (edge.groupName()[0] != edge.from.value ? -1 : 1)
-            var incl  = Math.atan((edge.to.y - edge.from.y)/(edge.to.x - edge.from.x))
-            var coeff = (edge.to.x < edge.from.x) ? -1 : 1
-            // Noeud A : noeud de départ
-            var ax = edge.from.x + RAYON_NOEUD * Math.cos(incl) * coeff
-            var ay = edge.from.y + RAYON_NOEUD * Math.sin(incl) * coeff
-            // Noeud B : noeud d'arrivée
-            var bx = edge.to.x - RAYON_NOEUD * Math.cos(incl) * coeff
-            var by = edge.to.y - RAYON_NOEUD * Math.sin(incl) * coeff
-
-            var mx = 0.5 * (bx + ax)
-            var my = 0.5 * (by + ay)
-            var lg_AB = Math.sqrt(Math.pow(ay - by, 2) + Math.pow(bx - ax, 2))
-
-            // Find the center point of the quadrature
-            var alphax = mx + bend * (-my + ay) / lg_AB
-            var alphay = my + bend * ( mx - ax) / lg_AB
+            var params = computeCurveParameters(group.length, i, edge);
             
-            // Now we have the following function of the quadratic curve Q(t)
-            // Q(t) = (1-t)^2 a + 2(1-t)t alpha + t^2 b, where t = 0..1
-            // Compute each of the d points
-            var n = 2 * lg_AB
+            // Quadratic curve Q(t) = (1-t)^2 a + 2(1-t)t alpha + t^2 b
+            // where t = 0..1. Compute each of the d points
+            var n = 2 * params['lg_AB']
 
-            // Take n/h steps of length h
-            for (var j = 0; j < n; j += h) {
+            // Take n/pitch steps of length h
+            for (var j = 0; j < n; j += pitch) {
                 // Find the corresponding value for t
                 var t = j/n
                 
                 // Compute coordinates of Q(t) = [Qx,Qy]
-                var Qx = (1-t)*(1-t) * ax + 2*(1-t)*t * alphax + t*t * bx
-                var Qy = (1-t)*(1-t) * ay + 2*(1-t)*t * alphay + t*t * by
+                var Qx = (1-t)*(1-t) * params['ax'] + 2*(1-t)*t * params['alphax'] + t*t * params['bx']
+                var Qy = (1-t)*(1-t) * params['ay'] + 2*(1-t)*t * params['alphay'] + t*t * params['by']
                 
-                distToMouse = Math.sqrt((Qy-y)*(Qy-y) + (Qx-x)*(Qx-x))
+                distToMouse = Math.sqrt(Math.pow(Qy-y, 2) + Math.pow(Qx-x, 2))
                 if (distToMouse < tol) {
                     return edge
                 }
@@ -111,10 +90,9 @@ function canvasMove(evt){
         if(tmp_edge[0] == null){
             tmp_edge = [x,y]
             // Simulated hovering on touch devices
-            //if(touch){
-                hovered = getElement(x,y)
-            //}
+            hovered = getElement(x,y)
         }
+
         // We're trying to drag an element
         if(hovered != null){
             // Set selection
@@ -151,12 +129,13 @@ function canvasMove(evt){
             context.lineWidth   = 1
             context.strokeRect(tmp_edge[0], tmp_edge[1], x-tmp_edge[0], y-tmp_edge[1])
         }
+
         if(!touch){
             dontclick = true // Prevent click event on mouseup
         }
     } else {
         //hovered = getElement(x,y)
-        if(uimode == GJ_TOOL_ADD_EDGE){
+        if (uimode == GJ_TOOL_ADD_EDGE) {
             hovered = getElement(x,y)
             if(touch && hovered instanceof Vertex){
                 tmp_edge[(tmp_edge[0] == null) ? 0 : 1] = hovered
@@ -285,7 +264,7 @@ function startAddVertex(cx){
 
 
 /*
- *  
+ *  Méthode appelée par canvasClick après avoir sélectionné le noeud d'arrivée
  */
 function finishAddEdge(cx){
     if(uimode == GJ_TOOL_ADD_EDGE && tmp_edge[0] instanceof Vertex && tmp_edge[1] instanceof Vertex){
@@ -297,7 +276,7 @@ function finishAddEdge(cx){
 
 
 /*
- *  
+ *  Méthode appelée par canvasClick après avoir cliqué quelque part sur le canvas
  */
 function finishAddVertex(x, y, cx){
     if(x >= 0 && y >= 0){
@@ -458,6 +437,43 @@ function clearCanvas(cx, force){
 
 
 /*
+ *  Mutualise les instructions de calcul des paramètres nécessaires
+ *  au tracé d'une arête incurvée (getElement et edge.draw)
+ */
+function computeCurveParameters(nbAretes, numArete, arete) {
+
+    // Paramètres de l'incurvation de l'arête
+    var bend  = (numArete * EDGE_SPACE - (nbAretes - 1) * EDGE_SPACE / 2) * (arete.groupName()[0] != arete.from.value ? -1 : 1)
+    var incl  = Math.atan((arete.to.y - arete.from.y)/(arete.to.x - arete.from.x))
+    var coeff = (arete.to.x < arete.from.x) ? -1 : 1
+    // Noeud A : noeud de départ
+    var ax = arete.from.x + RAYON_NOEUD * Math.cos(incl) * coeff
+    var ay = arete.from.y + RAYON_NOEUD * Math.sin(incl) * coeff
+    // Noeud B : noeud d'arrivée
+    var bx = arete.to.x - RAYON_NOEUD * Math.cos(incl) * coeff
+    var by = arete.to.y - RAYON_NOEUD * Math.sin(incl) * coeff
+
+    var mx = 0.5 * (bx + ax)
+    var my = 0.5 * (by + ay)
+    var lg_AB = Math.sqrt(Math.pow(ay - by, 2) + Math.pow(bx - ax, 2))
+
+    // Alpha : Centre de l'arc, milieu du segment AB "translaté" orthogonalement
+    var alphax = mx + bend * (-my + ay) / lg_AB
+    var alphay = my + bend * ( mx - ax) / lg_AB
+
+    return {
+        'ax' : ax,
+        'ay' : ay,
+        'bx' : bx,
+        'by' : by,
+        'alphax' : alphax,
+        'alphay' : alphay,
+        'lg_AB' : lg_AB
+    }
+}
+
+
+/*
  *  Demande la confirmation de suppression d'un noeud / d'une arête,
  *  et supprime l'élément auquel cas.
  */
@@ -537,10 +553,9 @@ function loadGraphFromJSON() {
  *  Exporte le graphe dans une description JSON
  */
 function saveGraphToJSON() {
-    prompt(
-        "Voici une description du graphe en JSON. Sauvez-là dans un fichier texte",
-        JSON.stringify(graph.toJSON())
-    );
+    jsonGraph = JSON.stringify(graph.toJSON(), null, 4)
+    $(" #json-area ").html(jsonGraph);
+    $(" #modalSaveGraph ").modal('show')
 }
 
 // Méthodes d'affichage des données sur l'interface -------------------------------------
@@ -605,32 +620,16 @@ function displayInfo(panel, el, cx){
  */
 function displayElements(panel){
     var list = ""
-    var elt = null
 
     // Noeuds
     if(graph.vertices.length > 0){
-        list += '<li class="h">Noeuds</li>'
-        for(var i in graph.vertices){
-            elt = graph.vertices[i]
-            list += '<li id="vertex-' + i + '"' + 
-                (inArray(elt, selected) ? ' class="selected"' : '') + '>' +
-                '<a>Noeud ' + he(elt.value) + '</a></li>'
-        }
+        list += formatVerticesList();
     }
     // Arêtes
     if(graph.edges.length > 0){
-        list += '<li class="h">Arêtes</li>'
-        for(var i in graph.edges){
-            elt = graph.edges[i]
-            list += '<li id="edge-' + i + '"' + (inArray(elt, selected) ? ' class="selected"' : '') + '>'
-                + '<a>Arête '
-                + (graph.directed ? '[' + he(elt.from.value) + ' -> ' + he(elt.to.value) + ']' :
-                    '(' + he(elt.from.value) + ', ' + he(elt.to.value) + ')')
-                + (elt.value != "" ? ' (Poids : ' + he(elt.value) + ')' : '') 
-                + '</a></li>'
-        }
+        list += formatEdgesList();
     }
-    list  = $(list)
+    list = $(list);
     
     // Clic handler sur les éléments du panneau latéral
     $("a", list).click(function(evt){

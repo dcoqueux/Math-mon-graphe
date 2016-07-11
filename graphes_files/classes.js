@@ -447,49 +447,33 @@ function Edge(id, value, from, to){
     this._draw   = function(style, total, i){
         if (typeof total == undef || total <= 0) { total = 1 }
         if (typeof i == undef || i < 0) { i = 0 }
-        
-        // Paramètres de l'incurvation de l'arête
-        var t     = (i * EDGE_SPACE - (total-1) * EDGE_SPACE / 2) * (this.groupName()[0] != this.from.value ? -1 : 1)
-        var incl  = Math.atan((this.to.y - this.from.y)/(this.to.x - this.from.x))
-        var coeff = (this.to.x < this.from.x) ? -1 : 1
-        // Noeud A : noeud de départ
-        var ax = this.from.x + RAYON_NOEUD * Math.cos(incl) * coeff
-        var ay = this.from.y + RAYON_NOEUD * Math.sin(incl) * coeff
-        // Noeud B : noeud d'arrivée
-        var bx = this.to.x - RAYON_NOEUD * Math.cos(incl) * coeff
-        var by = this.to.y - RAYON_NOEUD * Math.sin(incl) * coeff
 
-        // dlog(["Drawing", total, i, t])
-        
-        styleContext(style, false)
-        context.beginPath()
-        context.moveTo(ax, ay)
-        
-        // Alpha : Centre de l'arc, milieu du segment AB "translaté" orthogonalement
-        var mx = 0.5 * (bx + ax)
-        var my = 0.5 * (by + ay)
-        var lg_AB = Math.sqrt(Math.pow(ay - by, 2) + Math.pow(bx - ax, 2))
-        
-        var alphax = mx + t * (-my + ay) / lg_AB
-        var alphay = my + t * ( mx - ax) / lg_AB
+        var params = computeCurveParameters(total, i, this)
 
         // Trace l'arc jusqu'à B en passant par alpha
         // quadraticCurve : arc courbée si arête multiple entre deux noeuds, rectiligne sinon
-        context.quadraticCurveTo(alphax, alphay, bx, by)
+        
+        styleContext(style, false);
+        context.beginPath();
+        context.moveTo(params['ax'], params['ay']);
+        context.quadraticCurveTo(params['alphax'], params['alphay'], params['bx'], params['by']);
         context.stroke();
         
-        /*if (graph.directed) {
-            var vecteurX = bx - alphax;
-            var vecteurY = by - alphay;
+        // Ne fonctionne pas encore ...
+        if (graph.directed) {
+            var vecteurX = params['bx'] - params['alphax'];
+            var vecteurY = params['by'] - params['alphay'];
             var norme = Math.sqrt(Math.pow(vecteurX, 2) + Math.pow(vecteurY, 2));
 
             context.fillStyle = '#000';
-            context.moveTo(bx, by);
-            context.lineTo(bx - (vecteurX * 5 + vecteurY * 3) / norme, by - (vecteurY * 5 - vecteurX * 3) / norme);
-            context.lineTo(bx - (vecteurX * 5 - vecteurY * 3) / norme, by - (vecteurY * 5 + vecteurX * 3) / norme);
-            context.lineTo(bx, by);
+            context.beginPath();
+            context.moveTo(params['bx'], params['by']);
+            context.lineTo(params['bx'] - (vecteurX * 15 + vecteurY * 4) / norme, params['by'] - (vecteurY * 15 - vecteurX * 4) / norme);
+            context.lineTo(params['bx'] - (vecteurX * 15 - vecteurY * 4) / norme, params['by'] - (vecteurY * 15 + vecteurX * 4) / norme);
+            context.lineTo(params['bx'], params['by']);
+            context.closePath();
             context.fill();
-        }*/
+        }
 
         // Paramètres police
         context.textAlign = "center"
@@ -498,7 +482,7 @@ function Edge(id, value, from, to){
 
         // Affichage du nom et du poids du noeud
         styleContext(labelStyle, false)
-        context.fillText(this.value, alphax, alphay)
+        context.fillText(this.value, params['alphax'], params['alphay'])
     }
     
     // Supprime l'arête et fusionne les noeuds adjacents liés par l'arête
