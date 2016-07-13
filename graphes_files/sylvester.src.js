@@ -25,6 +25,8 @@ var Sylvester = {
   precision: 1e-6
 };
 
+// ===================================   VECTOR   =======================================
+
 function Vector() {}
 Vector.prototype = {
 
@@ -326,6 +328,7 @@ Vector.Zero = function(n) {
 };
 
 
+// ===================================   MATRIX   =======================================
 
 function Matrix() {}
 Matrix.prototype = {
@@ -367,7 +370,7 @@ Matrix.prototype = {
     return this.elements[0].length;
   },
 
-  // Returns true iff the matrix is equal to the argument. You can supply
+  // Returns true if the matrix is equal to the argument. You can supply
   // a vector as the argument, in which case the receiver must be a
   // one-column matrix equal to the vector.
   eql: function(matrix) {
@@ -466,6 +469,29 @@ Matrix.prototype = {
   },
 
   x: function(matrix) { return this.multiply(matrix); },
+
+  power: function(integer) {
+    var powerMatrix = this;
+    if (!this.isSquare() || typeof integer != "number" || integer < -1 || integer != Math.floor(integer)) {
+      return null;
+    }
+
+    // Case -1 --> Inverse
+    if (integer == -1) {
+      return this.inv();
+    }
+    // Case 0 --> Identity
+    else if (integer == 0) {
+      return Matrix.I(this.rows());
+    }
+    else {
+      for (var i = 2; i <= integer; i++) {
+        powerMatrix = powerMatrix.x(this);
+      }
+      return powerMatrix;
+    }
+  },
+
 
   // Returns a submatrix taken from the matrix
   // Argument order is: start row, start col, nrows, ncols
@@ -590,7 +616,7 @@ Matrix.prototype = {
 
   det: function() { return this.determinant(); },
 
-  // Returns true iff the matrix is singular
+  // Returns true if the matrix is singular
   isSingular: function() {
     return (this.isSquare() && this.determinant() === 0);
   },
@@ -811,17 +837,19 @@ Matrix.Random = function(n, m) {
 // Matrix filled with zeros
 Matrix.Zero = function(n, m) {
   var els = [], ni = n, i, nj, j;
-  do { i = n - ni;
+  do { 
+    i = n - ni;
     els[i] = [];
     nj = m;
-    do { j = m - nj;
+    do { 
+      j = m - nj;
       els[i][j] = 0;
     } while (--nj);
   } while (--ni);
   return Matrix.create(els);
 };
 
-
+// ====================================   LINE   ========================================
 
 function Line() {}
 Line.prototype = {
@@ -1025,6 +1053,7 @@ Line.Y = Line.create(Vector.Zero(3), Vector.j);
 Line.Z = Line.create(Vector.Zero(3), Vector.k);
 
 
+// ====================================   PLANE   =======================================
 
 function Plane() {}
 Plane.prototype = {

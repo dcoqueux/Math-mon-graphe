@@ -112,3 +112,37 @@ var formatEdgesList = function() {
 
     return list;
 }
+
+var formatAdjMatrix = function(matrice) {
+    var tab = '<table class="table table-bordered table-sm"><thead class="thead-inverse">' +
+        '<tr><th width="10%">De </th><th width="5%">Vers</th>'
+    
+    for (var i = 0; i < graph.vertices.length; i++) {
+        tab += '<th>' + graph.vertices[i].value + '</th>'
+    }
+
+    tab += '<th width="5%"></th></tr></thead><tbody>'
+
+    for (var i = 0; i < graph.vertices.length; i++) {
+        tab += '<tr><th class="table-inverse">' + graph.vertices[i].value + '</th>'
+
+        if (i == 0) {
+            tab += '<td rowspan="' + graph.vertices.length + '">' +
+                '<img src="./graphes_files/parenthese-ouvrante.svg" height="' + graph.vertices.length * 30 + '"></td>'
+        }
+
+        for (var j = 0; j < graph.vertices.length; j++) {
+            tab += '<td>' + matrice[i][j] + '</td>'
+        }
+
+        if (i == 0) {
+            tab += '<td rowspan="' + graph.vertices.length + '">' +
+                '<img src="./graphes_files/parenthese-fermante.svg" height="' + graph.vertices.length * 30 + '"></td>'
+        }
+
+        tab += '</tr>'
+    }
+
+    tab += '</tbody></table>'
+    return tab;
+}

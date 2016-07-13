@@ -73,16 +73,16 @@ h1 {
 	-webkit-border-radius: 6px;
 }
 
-.panel:first-child {
-	margin-top: 0;
-}
-
 .panel h2, .panel .title, .panel .selection {
 	font-size: 100%;
 	font-weight: bold;
 	color: #999;
 	text-transform: uppercase;
 	margin: 0;
+}
+
+.panel .table-bordered td, .panel .table-bordered th {
+	border-color: #000;
 }
 
 .panel ul.elements {

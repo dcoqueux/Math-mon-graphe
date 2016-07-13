@@ -50,13 +50,13 @@ $(document).ready(function(){
     // ===== Actions des boutons de la barre d'outils =====
 
     $( "#btnselect" ).click(function(){ clearUimode() })
-    $( "#btnaddvertex" ).click(function(){ startAddVertex(context) })
-    $( "#btnaddedge" ).click(function(){ startAddEdge(context) })
-    $( "#btninfo"  ).click(function(){ ui.properties.toggle() })
+    $( "#btnaddvertex" ).click(function(){ startAddVertex() })
+    $( "#btnaddedge" ).click(function(){ startAddEdge() })
     $( "#btnload"  ).click(function(){ loadGraphFromJSON() })
     $( "#btnsave"  ).click(function(){ saveGraphToJSON() })
-    $( "#btnclear" ).click(function(){ clearCanvas(context) })
-    $( "#btnmatrice" ).click(function(){  })
+    $( "#btnclear" ).click(function(){ clearCanvas() })
+    $( "#btninfo"  ).click(function(){ ui.properties.toggle() })
+    $( "#btnmatrice" ).click(function(){ matriceAdjacence() })
     
     // Resize
     $(window).resize(updateState)

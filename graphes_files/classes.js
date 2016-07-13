@@ -137,20 +137,30 @@ function Graph(){
         return l
     }
     
-    this.adjacencyMatrix = function(mobj){
-        var M = [], v, u, r
-        // TODO: Better support for directed graphs and multigraphs
-        for(var i in this.vertices){
-            v = this.vertices[i]
-            r = []
-            for(var j in this.vertices){
-                u = this.vertices[j]
-                //r.push(v.isNeighbour(u) ? 1 : 0)
-                r.push(v.edgeMultiplicity(u))
+    /*
+     *  Retourne la matrice d'adjacence du graphe
+     *  mobj : détermine si la fonction retourne un tableau bi-dimensionnel ou un objet Matrix
+     *  power : puissance à laquelle la matrice d'adjacence est élevée
+     */
+    this.adjacencyMatrix = function(mobj, puissance){
+        var matrice = Matrix.Zero(this.vertices.length, this.vertices.length).elements
+        var i, j
+
+        for (var k = 0; k < this.edges.length; k++) {
+            edge = this.edges[k];
+            i = graph.vertices.indexOf(edge.from)
+            j = graph.vertices.indexOf(edge.to)
+            matrice[i][j]++;
+            if (!graph.directed) {
+                matrice[j][i]++;
             }
-            M.push(r)
         }
-        return mobj ? $M(M.length > 0 ? M : [0]) : M
+
+        if (typeof puissance == nb && puissance > 1 && puissance == Math.floor(puissance)) {
+            return $M(matrice).power(puissance).elements;
+        }
+
+        return mobj ? $M(matrice) : matrice
     }
     
     this.degreeMatrix = function(mobj){

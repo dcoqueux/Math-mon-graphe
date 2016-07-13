@@ -224,19 +224,20 @@ function canvasKey(evt){
 /*
  *  Trigger enclenché au clic du bouton "Ajout d'une arête"
  */
-function startAddEdge(cx){
-    var panel = ui.properties
-    // Infobox
+function startAddEdge(){
     var msg = $(htmlMessages.nvlArete)
     
+    // Activation du bouton d'annulation de création
     $("#cancelEdge", msg).click(function(){ 
         setUimode(GJ_TOOL_SELECT); 
-        tmp_edge = [null,null]; updateState();
+        tmp_edge = [null,null];
+        updateState();
     })
-    panel.empty().append(msg)
 
-    selected  = [null]
-    tmp_edge        = [null,null]
+    ui.properties.empty().append(msg)
+
+    selected = [null]
+    tmp_edge = [null,null]
     updateState(false)
     setUimode(GJ_TOOL_ADD_EDGE)
 }
@@ -245,11 +246,10 @@ function startAddEdge(cx){
 /*
  *  Trigger enclenché au clic du bouton "Ajout d'un noeud"
  */
-function startAddVertex(cx){
-    var panel = ui.properties
-    var msg   = $(htmlMessages.nvNoeud)
+function startAddVertex(){
+    var msg = $(htmlMessages.nvNoeud)
 
-    // Enclenche la génération automatique d'arêtes autour du nouveau noeud
+    // Activation du bouton d'annulation de création
     $("#cancelVertex", msg).click( function(){ 
         setUimode(GJ_TOOL_SELECT); 
         updateState(); 
@@ -258,7 +258,7 @@ function startAddVertex(cx){
     selected = [null]
     tmp_edge = [null,null]
     updateState(false)
-    panel.empty().append(msg)
+    ui.properties.empty().append(msg)
     setUimode(GJ_TOOL_ADD_VERTEX)
 }
 
@@ -426,7 +426,7 @@ function setSelected(el, evt, cx){
 /*
  *  Demande la confirmation pour rendre le canvas vierge
  */
-function clearCanvas(cx, force){
+function clearCanvas(force){
     if(force || confirm("Voulez-vous supprimer le graphe actuel ? L'action est irréversible.")) {
         graph.detach();
         new Graph();
@@ -541,7 +541,7 @@ function graphFromJSON(json){
 function loadGraphFromJSON() {
     var json = prompt("Importez le graphe en insérant sa description en JSON ci-dessous"); 
     if (json != null && json.length > 0) { 
-        clearCanvas(context, true); 
+        clearCanvas(true); 
         graph = null; 
         graphFromJSON(json); 
         drawAll();
@@ -568,7 +568,7 @@ function updateState(info){
     context.canvas.width = $("#canvas-container").width()
     drawAll()
     // Propriétés
-    if(typeof info != bool || (typeof info == bool && info)){ 
+    if(info != false){ 
         displayInfo(ui.properties, selected) 
     }
     // Elements
@@ -656,4 +656,17 @@ function displayElements(panel){
         updateState()
     })
     $("ul.elements", panel).empty().append(list)
+}
+
+function matriceAdjacence(){
+    /*ui.properties.hide();
+    ui.properties = $("#matrice");
+    ui.properties.show();*/
+    
+    $(" #matrice ").show();
+    matrice = graph.adjacencyMatrix( false, parseInt($(" #path-length ").val()) );
+    $(" #tab-matrice ").html(formatAdjMatrix(matrice));
+
+    // TODO : a replacer de meilleur façon
+    $(" #path-length ").on("change", matriceAdjacence);
 }
