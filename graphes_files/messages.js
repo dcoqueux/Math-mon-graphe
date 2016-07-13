@@ -2,8 +2,8 @@ htmlMessages = {
     nvNoeud : '<button id="cancelVertex" class="btn btn-sm btn-danger infoboxbtn">Annuler</button><h2>Nouveau noeud</h2>' +
         '<p>Cliquez n\'importe où sur le canvas pour placer un noeud. Raccourci clavier pour la création : Clic sur le canvas en maintenant la touche "Alt" pressé</p>' +
         '<p><span><input type="checkbox" id="vertexautocomplete"><label for="vertexautocomplete">Lier le nouveau noeuds à tous les autres</label></span></p>',
-    nvlArete : '<button id="cancelEdge" class="btn btn-sm btn-danger infoboxbtn">Annuler</button><h2>Nouvelle arête</h2>' +
-        '<p>Cliquez sur deux noeuds à lier par une nouvelle arête. Raccourci clavier pour la création : Maintenir les touches "Alt" et "Shift" enfoncées et sélectionner 2 noeuds.</p>',
+    nvlArete : '<button id="cancelEdge" class="btn btn-sm btn-danger infoboxbtn">Annuler</button><h2>Nouvelle arête / Nouvel arc</h2>' +
+        '<p>Cliquez sur deux noeuds à lier par une nouvelle arête / nouvel arc. Raccourci clavier pour la création : Maintenir les touches "Alt" et "Shift" enfoncées et sélectionner 2 noeuds.</p>',
     multiselection : '<button class="btn btn-sm btn-danger infoboxbtn">Supprimer sélection</button><h2>Multiselection</h2>',
     listeNoeudsHead : '<li class="h">Noeuds</li>',
     listeAretesHead : '<li class="h">Arêtes</li>'
@@ -11,9 +11,9 @@ htmlMessages = {
 
 var formatEdgeName = function(from, to) {
     if (graph.directed) {
-        return "[" + from + " -> " + to + "]";
+        return "Arc [" + from + " -> " + to + "]";
     } else {
-        return "(" + from + ", " + to + ")";
+        return "Arête (" + from + ", " + to + ")";
     }
 }
 
@@ -30,7 +30,7 @@ var formatInfoboxVertex = function(noeud) {
             '</div>' +
             '<div class="input-group col-xs-6"">' +
                 '<span class="input-group-addon" id="basic-addon1">Degré : </span>' +
-                '<input type="text" class="form-control" value="' + /*he(noeud.getDegree())*/'' + '" readonly>' +
+                '<input type="text" class="form-control" value="' + he(noeud.getDegree()) + '" readonly>' +
             '</div>' +
         '</div>' +
     '</div>'
@@ -39,7 +39,7 @@ var formatInfoboxVertex = function(noeud) {
 var formatInfoboxEdge = function(arete) {
     return '<div>' +
         '<div class="row">' +
-            '<div class="col-xs-4"><h2>Arête ' + formatEdgeName(he(arete.from.value), he(arete.to.value)) + '</h2></div>' +
+            '<div class="col-xs-4"><h2>' + formatEdgeName(he(arete.from.value), he(arete.to.value)) + '</h2></div>' +
             '<div class="col-xs-8"><div class="btn-group btn-group-sm pull-right">' +
                 '<button class="btn btn-warning contractbtn" title="Fusionne les noeuds liés par l\'arête">Contracter arête</button>' +
                 '<button class="btn btn-danger removebtn">Supprimer arête</button>' +
@@ -105,7 +105,7 @@ var formatEdgesList = function() {
     for(var i in graph.edges){
         elt = graph.edges[i]
         list += '<li id="edge-' + i + '"' + (inArray(elt, selected) ? ' class="selected"' : '') + '>'
-            + '<a href="javascript://">Arête ' + formatEdgeName(he(elt.from.value), he(elt.to.value))
+            + '<a href="javascript://">' + formatEdgeName(he(elt.from.value), he(elt.to.value))
             + (elt.value != "" ? ' (Poids : ' + he(elt.value) + ')' : '')
             + '</a></li>'
     }

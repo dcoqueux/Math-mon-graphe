@@ -98,7 +98,7 @@ function Graph(){
         for(var i in this.vertices){
             v = this.vertices[i]
             if(v instanceof Vertex){
-                seq.push(v.degree)
+                seq.push(v.getDegree())
             }
         }
         return seq
@@ -200,7 +200,7 @@ function Graph(){
     this.hasEulerianChains = function() {
         oddDegrees = 0
         for (var i in this.vertices) {
-            if (this.vertices[i].degree % 2 == 1) {
+            if (this.vertices[i].getDegree() % 2 == 1) {
                 oddDegrees++
             }
         }
@@ -280,7 +280,6 @@ function Vertex(id, value, x, y){
     this.weigh  = ""            // Poids (ex : fréquence, probabilité)
     this.x      = Math.round(x) // Abscisse
     this.y      = Math.round(y) // Ordonnée
-    this.degree = 0             // Degré : nb d'arêtes partant du noeud
     this.edges  = []            // Arêtes ou arcs liées au noeud
     this.style  = defaultStyle
     
@@ -328,9 +327,27 @@ function Vertex(id, value, x, y){
         context.fillText(this.value, this.x, this.y)
         context.fillText(this.weigh, this.x - (RAYON_NOEUD + 10), this.y - (RAYON_NOEUD + 10))
     }
-    
-    this.toJSON    = function(){
-        return { id: this.id, value: this.value, x: this.x, y: this.y } // No style support yet
+
+    this.getDegree = function() {
+        deg = 0
+
+        for (var i = 0; i < this.edges.length; i++) {
+            edge = this.edges[i];
+            if (edge.from === this) {
+                deg++;
+            }
+            else if (edge.to === this) {
+                if (graph.directed) {
+                    deg--;
+                } else {
+                    deg++;
+                }
+            } else {
+                dlog(["WARNING", "arête associé à un noeud qui ne lui est pas attaché"]);
+            }
+        }
+
+        return deg;
     }
     
     this.isNeighbour = function(v){
@@ -347,20 +364,6 @@ function Vertex(id, value, x, y){
         return false
     }
     
-    this.edgeMultiplicity = function(v){
-        var e, c = 0
-        for(var i in this.edges){
-            e = this.edges[i]
-            if(
-                (e.from === this && e.to   === v) ||
-                (e.to   === this && e.from === v)
-            ){
-                c++
-            }
-        }
-        return c
-    }
-    
     this.neighbours = function(){
         var n = [], e
         for(var i in this.edges){
@@ -373,11 +376,9 @@ function Vertex(id, value, x, y){
         }
         return n
     }
-    
-    this.edgeGroupName = function(to){
-        var a = this.id, b = this.to.id
-        var c = (a <= b)
-        return (c ? a : b) + "," + (c ? b : a)
+
+    this.toJSON    = function(){
+        return { id: this.id, value: this.value, x: this.x, y: this.y } // No style support yet
     }
     
     this.attach()
@@ -403,13 +404,6 @@ function Edge(id, value, from, to){
         graph.edges.push(this)
         this.from.edges.push(this)
         this.to.edges.push(this)
-
-        this.from.degree++
-        if (graph.directed) {
-            this.to.degree--
-        } else {
-            this.to.degree++
-        }
     }
     
     this.detach = function() {
@@ -421,13 +415,6 @@ function Edge(id, value, from, to){
 
         listRemove(this.from.edges, this)
         listRemove(this.to.edges, this)
-
-        this.from.degree--
-        if (graph.directed) {
-            this.to.degree++
-        } else {
-            this.to.degree--
-        }
     }
 
     // ===== =====
@@ -498,16 +485,10 @@ function Edge(id, value, from, to){
             // Arêtes entrantes
             if(edge.to == this.to){
                 edge.to = this.from
-                if (graph.oriented) {
-                    this.from.degree--
-                } else {
-                    this.from.degree++
-                }
             }
             // Arêtes sortantes
             if(edge.from == this.to){
                 edge.from = this.from
-                this.from.degree++
             }
 
             // Les arêtes du même groupe que celle contractante est une boucle

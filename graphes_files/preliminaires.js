@@ -78,6 +78,10 @@ var labelStyle    = new ElementStyle("transparent", "#fff", 0)
 
 $(document).ready(function() {
 
+    $(" #matrice ").hide();
+    $(" #marche-aleatoire ").hide();
+    $(" #djikstra ").hide();
+
     $(" #createVertex ").on("click", function() {
         var v = graph.addVertex(
             [parseInt($("#vertexX").val()), parseInt($("#vertexY").val())], $("#vertexName").val())
@@ -120,7 +124,7 @@ function dlog(x){
 }
 function oc(a){ 
     var o = {}; 
-    for (var i=0; i<a.length; i++) { 
+    for (var i = 0; i < a.length; i++) { 
         o[a[i]] = ""; 
     } 
     return o 
@@ -155,7 +159,7 @@ function is_numeric(mixed_var) {
 }
 function trimArray(array) { 
     var a = []; 
-    for(var e in array){ 
+    for (var e = 0; e < array.length; e++) { 
         if(typeof array[e] != undef){ 
             a.push(array[e]) 
         } 
@@ -169,7 +173,7 @@ function noevt(evt){
 }
 
 function inArray(obj, tab){
-    for(var i in tab){
+    for (var i = 0; i < tab.length; i++) {
         if(tab[i] === obj){
             return true
         }
@@ -178,7 +182,7 @@ function inArray(obj, tab){
 }
 
 function listRemove(list, val){
-    for(var i = 0; i < list.length; i++){
+    for (var i = 0; i < list.length; i++) {
         if(list[i] == val){
             list.splice(i, 1)
         }
