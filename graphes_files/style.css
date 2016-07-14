@@ -61,6 +61,10 @@ h1 {
 	margin-bottom: 5px;
 }
 
+#matrice, #marche-aleatoire, #djikstra {
+	display: none;
+}
+
 .panel {
 	background-color: #e8e8e8;
 	border: 1px solid #ddd;

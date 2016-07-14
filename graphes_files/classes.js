@@ -12,7 +12,6 @@ function Graph(){
     this.vertices = []
     this.edges    = []
     this.directed = false
-    this.cmpltd   = false
     
     // ===== Constructeur et destructeur =====
 
@@ -25,7 +24,6 @@ function Graph(){
         if (v instanceof Array && v.length == 2) {
             v = new Vertex(elt_id++, value, v[0], v[1])
             this.draw(context)
-            this.cmpltd = false
             return v
         }
         else {
@@ -40,7 +38,6 @@ function Graph(){
 
         if (e instanceof Edge && inArray(e.from, this.vertices) && inArray(e.to, this.vertices)) {
             this.draw(context)
-            this.cmpltd = false
             return e
         }
         return null
@@ -63,30 +60,30 @@ function Graph(){
         }
 
         // Dessin des noeuds
-        for(var i in this.vertices){
+        for (var i = 0; i < this.vertices.length; i++) {
             this.vertices[i].draw()
         }
     }
 
     // Repositionne les noeuds dans le canvas si redimensionné
     this.readjust = function() {
-        for (var i in this.vertices) {
+        for (var i = 0; i < this.vertices.length; i++) {
             if (this.vertices[i].x > canvas.width) {
-                this.vertices[i].x = canvas.width - (RAYON_NOEUD + 5)
+                this.vertices[i].x = canvas.width - (RAYON_NOEUD + 10)
             }
 
             if (this.vertices[i].y > canvas.width) {
-                this.vertices[i].y = canvas.width - (RAYON_NOEUD + 5)
+                this.vertices[i].y = canvas.width - (RAYON_NOEUD + 10)
             }
         }
     }
     
     this.toJSON = function(){
         var o = { vertices: [], edges: [], x: this.x, y: this.y }
-        for(var i in this.vertices){
+        for (var i = 0; i < this.vertices.length; i++) {
             o.vertices.push(this.vertices[i].toJSON())
         }
-        for(var i in this.edges){
+        for (var i = 0; i < this.edges.length; i++) {
             o.edges.push(this.edges[i].toJSON())
         }
         return o
@@ -95,7 +92,7 @@ function Graph(){
     // Liste des degrés des noeuds du graphe (TODO : a supprimer ?)
     this.degreeSeq = function(){
         var seq = [], v
-        for(var i in this.vertices){
+        for (var i = 0; i < this.vertices.length; i++) {
             v = this.vertices[i]
             if(v instanceof Vertex){
                 seq.push(v.getDegree())
@@ -114,7 +111,7 @@ function Graph(){
         var a
 
         // Vertices
-        for(var i in this.vertices){
+        for(var i = 0; i < this.vertices.length; i++) {
             a = this.vertices[i]
             if ((xl <= a.x && a.x <= xh) && (yl <= a.y && a.y <= yh)) {
                 els.push(a)
@@ -130,7 +127,7 @@ function Graph(){
     
     this.adjacencyList = function(){
         var l = [], e
-        for(var i in this.edges){
+        for (var i = 0; i < this.edges.length; i++) {
             e = this.edges[i]
             l.push([e.from, e.to])
         }
@@ -161,6 +158,15 @@ function Graph(){
         }
 
         return mobj ? $M(matrice) : matrice
+    }
+
+    /*
+     *  Si le graphe est probabiliste (graphe orienté, avec arcs pondérés,
+     *  et dont la somme des poids des arcs partant d'un noeud est égal à 1)
+     *  la méthode retourne la matrice de transition du graphe.
+     */
+    this.transitionMatrix = function() {
+
     }
     
     this.degreeMatrix = function(mobj){
@@ -194,22 +200,33 @@ function Graph(){
     // ===== =====
     
     this.edgeGroups = function(groupname){
-        var l = {}, e, name
-        for(var i in this.edges){
-            e    = this.edges[i]
-            name = e.groupName()
-            if(!(name in l)){ l[name] = [] }
-            l[name].push(e)
+        // un groupe d'arêtes (array) reliant 2 memes noeuds
+        // est indexée dans la liste par un groupname
+        var liste = {}
+        var edge, name
+
+        for (var i = 0; i < this.edges.length; i++) {
+            edge = this.edges[i]
+            name = edge.groupName()
+
+            if (!(name in liste)) { 
+                liste[name] = [] 
+            }
+            liste[name].push(edge)
         }
-        if(groupname){
-            return groupname in l ? l[groupname] : null
+
+        // Si demandé par l'utilisateur, retourne un groupe d'arêtes
+        // en particulier, sinon toute la liste
+        if (groupname) {
+            return (groupname in liste) ? liste[groupname] : null
         }
-        return l
+
+        return liste
     }
 
     this.hasEulerianChains = function() {
         oddDegrees = 0
-        for (var i in this.vertices) {
+        for (var i = 0; i < this.vertices.length; i++) {
             if (this.vertices[i].getDegree() % 2 == 1) {
                 oddDegrees++
             }
@@ -218,56 +235,78 @@ function Graph(){
         return (oddDegrees == 0 || oddDegrees == 2)
     }
     
+    // Graphe complet : graphe où chaque noeud est relié à tous les autres par une arête
     this.isComplete = function(){
-        // Autocompleted? Yes.
-        if(this.cmpltd){ return true }
-        // Might still be...
-        var n = this.vertices.length
-        if(this.edges.length == ((n*(n-1))/2)){
-            var seq = this.degreeSeq()
-            for(var i in seq){
-                if(seq[i] != n-1){
-                    return false
-                }
-            }
-            return true
+        var groups = this.edgeGroups();
+        var n = this.vertices.length;
+
+        // Somme des arêtes = somme des entiers de 1 à n ?
+        if (Object.keys(groups).length != n*(n-1)/2)
+            return false;
+
+        // Pas d'arêtes multiples
+        for (var i in groups) {
+            if (groups[i].length != 1)
+                return false;
         }
-        return false
+
+        return true;
+    }
+
+    /*
+     *  Vérifie que toutes les arêtes du graphe sont pondérées
+     *  proba : booléen pour vérifier également que le poids est bien une probabilité
+     */
+    this.allEdgesWeighted = function(proba) {
+        for (var i = 0; i < this.edges.length; i++) {
+            weigh = this.edges[i].value
+            if (!is_numeric(weigh)) {
+                return false;
+            }
+
+            if (proba && (parseFloat(weigh) < 0 || parseFloat(weigh) > 1)) {
+                return false;
+            }
+        }
+        return true
     }
     
+
+    /*
+     *  Supprime toutes les arêtes du graphe pour refrabiquer un graphe complet.
+     */
     this.complete = function(cx){
-        this.edges = []
-        for(var i in this.vertices){
-            v = this.vertices[i]
-            if(v instanceof Vertex){
-                v.edges  = []
-            }
+        var v1, v2;
+        var i, j;
+        this.edges = [];
+
+        for (i = 0; i < this.vertices.length; i++) {
+            v1 = this.vertices[i]
+            v1.edges = []
         }
-        for(var i in this.vertices){
-            v = this.vertices[i]
-            if(v instanceof Vertex){
-                for(var j in this.vertices){
-                    u = this.vertices[j]
-                    if(u instanceof Vertex && u !== v){
-                        if(!v.isNeighbour(u)){
-                            this.addEdge([v,u], cx)
-                        }
-                    }
+
+        for (i = 0; i < this.vertices.length; i++) {
+            v1 = this.vertices[i]
+
+            for (j = i + 1; j < this.vertices.length; j++) {
+                v2 = this.vertices[j]
+
+                if (v2 !== v1) {
+                    this.addEdge([v1, v2])
                 }
             }
         }
-        this.cmpltd = true
     }
     
     this.semiComplete = function(v, cx){
         dlog(["Semicomplete", v, v instanceof Vertex])
         if(v instanceof Vertex && inArray(v, this.vertices)){
-            for(var j in this.vertices){
+            for (var j = 0; j < this.vertices; j++) {
                 u = this.vertices[j]
-                dlog([u,v])
+
                 if(u instanceof Vertex && u !== v){
                     if(!v.isNeighbour(u)){
-                        this.addEdge([v,u], cx)
+                        this.addEdge([v,u])
                     }
                 }
             }
@@ -362,7 +401,7 @@ function Vertex(id, value, x, y){
     
     this.isNeighbour = function(v){
         var edge
-        for(var i in this.edges){
+        for (var i = 0; i < this.edges.length; i++) {
             edge = this.edges[i]
             if(
                 (edge.from === this && edge.to   === v) ||
@@ -376,7 +415,7 @@ function Vertex(id, value, x, y){
     
     this.neighbours = function(){
         var n = [], e
-        for(var i in this.edges){
+        for (var i = 0; i < this.edges.length; i++) {
             e = this.edges[i]
             if(e.from === this){
                 n.push(e.to)
@@ -489,7 +528,7 @@ function Edge(id, value, from, to){
         this.detach()
 
         // Avant sa suppression, on récupère les arêtes du noeud
-        for(var i in this.to.edges){
+        for (var i in this.to.edges) {
             edge = this.to.edges[i]
 
             // Arêtes entrantes

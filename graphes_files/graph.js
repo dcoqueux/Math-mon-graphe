@@ -9,7 +9,7 @@ function getElement(x, y){
     var el, r
 
     // Un noeud ?
-    for(var i = graph.vertices.length - 1; i >= 0; i--){
+    for (var i = graph.vertices.length - 1; i >= 0; i--) {
         el = graph.vertices[i]
         r  = el.style.vertexradius * (touch ? 3 : 1.5)
         if(Math.abs(x - el.x) <= r && Math.abs(y - el.y) <= r) {
@@ -23,10 +23,10 @@ function getElement(x, y){
     var pitch = 5
     var edgegroups = graph.edgeGroups()
     
-    for(var s in edgegroups){
+    for (var s in edgegroups) {
         var group = edgegroups[s]
 
-        for(var i in group){
+        for (var i in group) {
             var edge = group[i]
             var params = computeCurveParameters(group.length, i, edge);
             
@@ -101,7 +101,7 @@ function canvasMove(evt){
                 tmp_edge = [x,y]
             }
             // Drag each selected element
-            for(var n in selected){
+            for (var n in selected) {
                 el = selected[n]
                 if(el instanceof Vertex){
                     // Set original vertex position
@@ -121,7 +121,7 @@ function canvasMove(evt){
             var selection  = graph.elementsWithinRect(tmp_edge[0], tmp_edge[1], x, y)
             //selected       = evt.shiftKey ? selected.concat(selection) : selection
             if(!evt.shiftKey){ selected = [] }
-            for(var i in selection){
+            for (var i in selection) {
                 selected[selection[i].id] = selection[i]
             }
             drawAll()
@@ -202,7 +202,7 @@ function canvasKey(evt){
             var inc = inArray(key, [38,39]) 
             var x   = inArray(key, [37,39])
 
-            for(var i in selected){
+            for (var i in selected) {
                 s = selected[i]
                 if(s.x && s.y && !isNaN(s.x) && !isNaN(s.y)){
                     if(x){
@@ -300,7 +300,7 @@ function drawAll() {
     graph.draw()
 
     // Les éléments sélectionnés ont une surchage de dessin spéciale
-    for(var n in selected){
+    for (var n in selected) {
         el = selected[n]
 
         if(el instanceof Vertex){
@@ -308,9 +308,9 @@ function drawAll() {
         }
 
         if(el instanceof Edge){
-            // Get edgegroup
             var g = graph.edgeGroups(el.groupName())
-            for(var i in g){
+
+            for (var i in g) {
                 if(g[i] == el){
                     g[i].drawSel(g.length, i)
                 }
@@ -504,12 +504,12 @@ function graphFromJSON(json){
 
         var v, from, to
 
-        for(var i in obj.vertices){
+        for (var i in obj.vertices) {
             vertex = obj.vertices[i]
             graph.addVertex([vertex.x, vertex.y], vertex.value);
         }
 
-        for(var i in obj.edges){
+        for (var i in obj.edges) {
             edge = obj.edges[i]
 
             // Trouver un moyen de faire le lien noeud / arête
@@ -658,15 +658,31 @@ function displayElements(panel){
     $("ul.elements", panel).empty().append(list)
 }
 
-function matriceAdjacence(){
+function matriceAdjacence() {
     /*ui.properties.hide();
     ui.properties = $("#matrice");
     ui.properties.show();*/
+    ui.properties.hide();
+
     
     $(" #matrice ").show();
     matrice = graph.adjacencyMatrix( false, parseInt($(" #path-length ").val()) );
-    $(" #tab-matrice ").html(formatAdjMatrix(matrice));
+    $(" #tab-matrice ").html(formatMatrix(matrice));
 
     // TODO : a replacer de meilleur façon
     $(" #path-length ").on("change", matriceAdjacence);
+}
+
+
+function marcheAleatoire() {
+    ui.properties.hide();
+    if (!graph.directed) {
+        graph.directed = true;
+        updateState();
+    }
+
+    matriceTransition = graph.transitionMatrix();
+
+    
+    $(" #marche-aleatoire ").show();
 }

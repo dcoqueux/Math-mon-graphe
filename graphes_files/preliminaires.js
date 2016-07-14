@@ -27,9 +27,8 @@ var canvas_elt = null,
     context    = null
 
 // Données de l'interface utilisateur
-var ui        = { 
-    properties: null, 
-    styles: null, 
+var ui = { 
+    properties: null,
     elements: null
 }
 
@@ -78,9 +77,7 @@ var labelStyle    = new ElementStyle("transparent", "#fff", 0)
 
 $(document).ready(function() {
 
-    $(" #matrice ").hide();
-    $(" #marche-aleatoire ").hide();
-    $(" #djikstra ").hide();
+    $('[data-toggle="tooltip"]').tooltip();
 
     $(" #createVertex ").on("click", function() {
         var v = graph.addVertex(

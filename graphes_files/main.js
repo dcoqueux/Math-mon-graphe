@@ -11,7 +11,6 @@ $(document).ready(function(){
     // Elements
     ui.properties = $("#info")
     ui.elements   = $("#elements")
-    ui.styles     = $("#styles")
     
     // Example
     new Graph();
@@ -57,6 +56,7 @@ $(document).ready(function(){
     $( "#btnclear" ).click(function(){ clearCanvas() })
     $( "#btninfo"  ).click(function(){ ui.properties.toggle() })
     $( "#btnmatrice" ).click(function(){ matriceAdjacence() })
+    $( "#btnmarche" ).click(function(){ marcheAleatoire() })
     
     // Resize
     $(window).resize(updateState)

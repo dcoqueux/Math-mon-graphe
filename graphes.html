@@ -35,11 +35,11 @@
                             <i class="fa fa-pencil"></i>
                             <span class="btn-label"> Manipuler</span>
                         </button>
-                        <button id="btnaddvertex" class="btn btn-secondary uimode uimode-2" title="Raccourci : Alt+Clic">
+                        <button id="btnaddvertex" class="btn btn-secondary uimode uimode-2" data-toggle="tooltip" title="Raccourci : Alt+Clic" data-placement="bottom">
                             <i class="fa fa-circle-o"></i>
                             <span class="btn-label"> Ajouter noeud</span>
                         </button>
-                        <button id="btnaddedge" class="btn btn-secondary uimode uimode-1" title="Raccourci : Shift+Alt+Clic">
+                        <button id="btnaddedge" class="btn btn-secondary uimode uimode-1" data-toggle="tooltip" title="Raccourci : Shift+Alt+Clic" data-placement="bottom">
                             <i class="fa fa-arrows-h"></i>
                             <span class="btn-label"> Ajouter arête</span>
                         </button>
@@ -92,19 +92,19 @@
 
                     <!-- Groupe de boutons au-dessus de l'infobox -->
                     <div class="btn-group btn-group-sm">
-                        <button id="btninfo" class="btn btn-primary" title="Affiche/Cache le panneau d'information">
+                        <button id="btninfo" class="btn btn-primary" data-toggle="tooltip" title="Affiche/Cache le panneau d'information" data-placement="bottom">
                             <i class="fa fa-info"></i>
                             <span class="btn-label"> Infobox</span>
                         </button>
-                        <button id="btnmatrice" class="btn btn-secondary" title="Affiche la matrice du graphe courant">
+                        <button id="btnmatrice" class="btn btn-secondary" data-toggle="tooltip" title="Combien de chemins entre 2 noeuds ?" data-placement="bottom">
                             <i class="fa fa-th"></i>
                             <span class="btn-label"> Matrice d'adjacence</span>
                         </button>
-                        <button class="btn btn-secondary" title="Simuler une marche aléatoire">
+                        <button id="btnmarche" class="btn btn-secondary" data-toggle="tooltip" title="Simuler une marche aléatoire" data-placement="bottom">
                             <i class="fa fa-map-signs"></i>
                             <span class="btn-label"> Marche aléatoire</span>
                         </button>
-                        <button class="btn btn-secondary" title="Recherche du plus court chemin">
+                        <button class="btn btn-secondary" data-toggle="tooltip" title="Recherche du plus court chemin" data-placement="bottom">
                             <i class="fa fa-rocket"></i>
                             <span class="btn-label"> Algorithme de Djikstra</span>
                         </button>
@@ -121,7 +121,7 @@
                         <p>La matrice d'adjacence est la matrice où le coefficient à la ligne i et la colonne j représente le nombre d'arêtes reliant les sommets i et j</p>
                         <p>En élevant la matrice d'adjacence à la puissance k, c'est-à-dire en procédant à la multiplication de k fois la matrice d'adjacence, les coefficients de la matrice finale s'interprètent comme le nombre de chemins reliant les sommets i et j, distincts et longs de <b>k arêtes</b> </p>
                         <div class="input-group">
-                            <span class="input-group-addon" id="basic-addon1">Longueur des chemins : </span>
+                            <span class="input-group-addon">Longueur des chemins : </span>
                             <input type="text" id="path-length" value="1" class="form-control">
                         </div>
                         <br/>
@@ -130,6 +130,37 @@
 
                     <!-- Panel marche aléatoire -->
                     <div id="marche-aleatoire" class="panel">
+                        <h2>Marche aléatoire</h2>
+                        <br/>
+                        <p>A chaque noeud, on associe une population (exprimée par son effectif ou sa fréquence). D'une étape à l'autre, ces populations migrent (ou pas) vers d'autres noeuds selon les probabilités déclarées sur chaque arc.</p>
+                        <p>Prérequis pour simuler une marche aléatoire : le graphe doit être <b>orienté</b>, tous les arcs doivent être <b>pondérées</b>, et <b>un seul arc</b> au maximum entre un même noeud de départ et un même noeud d'arrivée.</p>
+                        <p>Remarque : la probabilité de rester au sein d'un noeud est calculée automatiquement.</p>
+                        <div class="row">
+                            <div class="input-group col-xs-6">
+                                <span class="input-group-addon">Aller à l'étape #</span>
+                                <input type="text" id="step" class="form-control">
+                                <div class="input-group-btn dropup">
+                                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" >
+                                      Go ...
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#">Résultat direct</a>
+                                        <a class="dropdown-item" href="#">Pas à pas automatique</a>
+                                        <a class="dropdown-item" href="#">Pas à pas manuel</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-group col-xs-6">
+                                <span class="input-group-addon">Etape #</span>
+                                <input type="text" id="step" class="form-control" value="0" readonly>
+                                <span class="input-group-btn"><button class="btn btn-success">Recommencer</button></span>
+                            </div>
+                        </div>
+                        <br/>
+                        <div class="row">
+                            <div id="tab-marche" class="col-xs-9"></div>
+                            <div id="tab-etat" class="col-xs-3"></div>
+                        </div>
                     </div>
 
                     <!-- Panel Djikstra -->
@@ -181,6 +212,7 @@
         </div>
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="./graphes_files/tether.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
     </body>
 </html>

@@ -1,9 +1,14 @@
 htmlMessages = {
     nvNoeud : '<button id="cancelVertex" class="btn btn-sm btn-danger infoboxbtn">Annuler</button><h2>Nouveau noeud</h2>' +
-        '<p>Cliquez n\'importe où sur le canvas pour placer un noeud. Raccourci clavier pour la création : Clic sur le canvas en maintenant la touche "Alt" pressé</p>' +
-        '<p><span><input type="checkbox" id="vertexautocomplete"><label for="vertexautocomplete">Lier le nouveau noeuds à tous les autres</label></span></p>',
+        '<p>Cliquez n\'importe où sur le canvas pour placer un noeud.</p>' +
+        '<p>Raccourci clavier pour la création : Clic sur le canvas en maintenant la touche "Alt" pressé</p>' +
+        '<div class="row"><div class="input-group col-xs-6">' +
+            '<span class="input-group-addon"><input type="checkbox" id="vertexautocomplete"></span>' +
+            '<input type="text" class="form-control" value="Lier automatiquement le nouveau noeud à tous les autres" readonly>' +
+        '</div></div>',
     nvlArete : '<button id="cancelEdge" class="btn btn-sm btn-danger infoboxbtn">Annuler</button><h2>Nouvelle arête / Nouvel arc</h2>' +
-        '<p>Cliquez sur deux noeuds à lier par une nouvelle arête / nouvel arc. Raccourci clavier pour la création : Maintenir les touches "Alt" et "Shift" enfoncées et sélectionner 2 noeuds.</p>',
+        '<p>Cliquez sur deux noeuds à lier par une nouvelle arête / nouvel arc.</p>' +
+        '<p>Raccourci clavier pour la création : Maintenir les touches "Alt" et "Shift" enfoncées et sélectionner 2 noeuds.</p>',
     multiselection : '<button class="btn btn-sm btn-danger infoboxbtn">Supprimer sélection</button><h2>Multiselection</h2>',
     listeNoeudsHead : '<li class="h">Noeuds</li>',
     listeAretesHead : '<li class="h">Arêtes</li>'
@@ -25,11 +30,11 @@ var formatInfoboxVertex = function(noeud) {
         '</div>' +
         '<div class="row">' +
             '<div class="input-group col-xs-6">' +
-                '<span class="input-group-addon" id="basic-addon1">Nom : </span>' +
+                '<span class="input-group-addon">Nom : </span>' +
                 '<input type="text" class="form-control" id="label" value="' + he(noeud.value) + '">' +
             '</div>' +
             '<div class="input-group col-xs-6"">' +
-                '<span class="input-group-addon" id="basic-addon1">Degré : </span>' +
+                '<span class="input-group-addon">Degré : </span>' +
                 '<input type="text" class="form-control" value="' + he(noeud.getDegree()) + '" readonly>' +
             '</div>' +
         '</div>' +
@@ -47,7 +52,7 @@ var formatInfoboxEdge = function(arete) {
         '</div>' +
         '<div class="row">' +
             '<div class="input-group col-xs-12">' +
-                '<span class="input-group-addon" id="basic-addon1">Poids : </span>' +
+                '<span class="input-group-addon">Poids : </span>' +
                 '<input type="text" id="label" value="' + he(arete.value) + '" class="form-control">' +
             '</div>' +
         '</div>' +
@@ -113,9 +118,15 @@ var formatEdgesList = function() {
     return list;
 }
 
-var formatAdjMatrix = function(matrice) {
-    var tab = '<table class="table table-bordered table-sm"><thead class="thead-inverse">' +
-        '<tr><th width="10%">De </th><th width="5%">Vers</th>'
+var formatMatrix = function(matrice, direct) {
+    var tab = '<table class="table table-bordered table-sm"><thead class="thead-inverse">'
+    if (direct) {
+        // Matrice d'adjacence : ligne -> de, colonne -> vers
+        tab += '<tr><th width="10%">De</th><th width="5%">Vers</th>'
+    } else {
+        // Matrice de transition : colonne -> de, ligne -> vers
+        tab += '<tr><th width="10%">Vers</th><th width="5%">De</th>'
+    }
     
     for (var i = 0; i < graph.vertices.length; i++) {
         tab += '<th>' + graph.vertices[i].value + '</th>'
