@@ -145,12 +145,12 @@ function Graph(){
 
         for (var k = 0; k < this.edges.length; k++) {
             edge = this.edges[k];
-            i = graph.vertices.indexOf(edge.from)
-            j = graph.vertices.indexOf(edge.to)
+            i = this.vertices.indexOf(edge.from);
+            j = this.vertices.indexOf(edge.to);
+
             matrice[i][j]++;
-            if (!graph.directed) {
+            if (!this.directed)
                 matrice[j][i]++;
-            }
         }
 
         if (typeof puissance == nb && puissance > 1 && puissance == Math.floor(puissance)) {
@@ -165,8 +165,43 @@ function Graph(){
      *  et dont la somme des poids des arcs partant d'un noeud est égal à 1)
      *  la méthode retourne la matrice de transition du graphe.
      */
-    this.transitionMatrix = function() {
+    this.transitionMatrix = function(mobj, puissance) {
+        var n = this.vertices.length;
+        var matrice = Matrix.Zero(n, n).elements;
+        var i, j, k;
+        var arc;
+        var sommePoids;
 
+        if (!this.allEdgesWeighted(true)) {
+            return null
+        }
+
+        for (k = 0; k < this.edges.length; k++) {
+            arc = this.edges[k];
+            j = this.vertices.indexOf(arc.from);
+            i = this.vertices.indexOf(arc.to);
+            matrice[i][j] += parseFloat(arc.value);
+        }
+
+        for (j = 0; j < n; j++) {
+            sommePoids = 0;
+            for (i = 0; i < n; i++) {
+                sommePoids += matrice[i][j];
+            }
+
+            if (sommePoids > 1) {
+                return null;
+            } else {
+                matrice[j][j] = Number((1 - sommePoids).toFixed(5));
+            }
+        }
+
+        // retourner la matrice si toutes les conditions sont vérifiées
+        if (typeof puissance == nb && puissance > 1 && puissance == Math.floor(puissance)) {
+            return $M(matrice).power(puissance).elements;
+        }
+
+        return mobj ? $M(matrice) : matrice;
     }
     
     this.degreeMatrix = function(mobj){

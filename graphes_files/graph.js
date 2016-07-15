@@ -667,7 +667,7 @@ function matriceAdjacence() {
     
     $(" #matrice ").show();
     matrice = graph.adjacencyMatrix( false, parseInt($(" #path-length ").val()) );
-    $(" #tab-matrice ").html(formatMatrix(matrice));
+    $(" #tab-matrice ").html(formatMatrix(matrice, true));
 
     // TODO : a replacer de meilleur façon
     $(" #path-length ").on("change", matriceAdjacence);
@@ -681,8 +681,13 @@ function marcheAleatoire() {
         updateState();
     }
 
-    matriceTransition = graph.transitionMatrix();
+    matriceTransition = graph.transitionMatrix(false);
+    if (matriceTransition == null)
+        $(" #tab-marche ").html("Erreur dans la génération de la matrice");
+    else
+        $(" #tab-marche ").html(formatMatrix(matriceTransition, false));
 
+    $(" #tab-etat ").html(formatEtatProbabiliste());
     
     $(" #marche-aleatoire ").show();
 }

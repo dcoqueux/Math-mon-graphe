@@ -157,3 +157,15 @@ var formatMatrix = function(matrice, direct) {
     tab += '</tbody></table>'
     return tab;
 }
+
+formatEtatProbabiliste = function() {
+    var tab = '<table class="table table-bordered table-sm">'
+    tab += '<thead class="thead-inverse"><tr><th>Etat probabiliste</th></tr></thead><tbody>'
+
+    for (var i = 0; i < graph.vertices.length; i++) {
+        tab += '<tr><td><input id="vect-' + i + '"class="form-control"></td></tr>'
+    }
+
+    tab += '</tbody></table>'
+    return tab;
+}
