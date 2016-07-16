@@ -79,12 +79,13 @@ $(document).ready(function() {
 
     $('[data-toggle="tooltip"]').tooltip();
 
+    // Clic sur le bouton de validation du nom du noeud dans le modal création
     $(" #createVertex ").on("click", function() {
         var v = graph.addVertex(
             [parseInt($("#vertexX").val()), parseInt($("#vertexY").val())], $("#vertexName").val())
 
         if( $("#vertexautocomplete").is(":checked") ) { 
-            graph.semiComplete(v)
+            graph.semiComplete(v) // Ne fonctionne pas. TODO : A corriger
             updateState(false)
         } else {
             clearUimode()
@@ -94,16 +95,23 @@ $(document).ready(function() {
         $( "#modalCreationVertex" ).modal('hide');
     });
 
+    // Touche entrée --> validation du nom du noeud
     $(" #vertexName ").on("keypress", function(args) {
         if (args.keyCode == 13 && $(" #modalCreationVertex ").hasClass('in')) {
             $(" #createVertex ").click();
         }
     });
 
+    // Activer ou désactiver l'orientation du graphe
     $(document).on("click", "#btn-oriente", function() {
         graph.directed = !graph.directed;
         updateState();
     });
+
+    // Modales d'aide
+    $(document).on("click", "#kesako-matrice", function() { $(" #modalKesakoMatrice ").modal('show') });
+    $(document).on("click", "#kesako-marche", function() { $(" #modalKesakoMarche ").modal('show') });
+    $(document).on("click", "#kesako-djikstra", function() { $(" #modalKesakoDjikstra ").modal('show') });
 })
 
 // Fonctions utiles ---------------------------------------------------------------------

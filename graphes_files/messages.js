@@ -11,7 +11,8 @@ htmlMessages = {
         '<p>Raccourci clavier pour la création : Maintenir les touches "Alt" et "Shift" enfoncées et sélectionner 2 noeuds.</p>',
     multiselection : '<button class="btn btn-sm btn-danger infoboxbtn">Supprimer sélection</button><h2>Multiselection</h2>',
     listeNoeudsHead : '<li class="h">Noeuds</li>',
-    listeAretesHead : '<li class="h">Arêtes</li>'
+    listeAretesHead : '<li class="h">Arêtes</li>',
+    erreurMatrice : 'Erreur dans la génération de la matrice. Vérifiez que tous les arcs sont correctement pondérés'
 }
 
 var formatEdgeName = function(from, to) {
@@ -163,7 +164,7 @@ formatEtatProbabiliste = function() {
     tab += '<thead class="thead-inverse"><tr><th>Etat probabiliste</th></tr></thead><tbody>'
 
     for (var i = 0; i < graph.vertices.length; i++) {
-        tab += '<tr><td><input id="vect-' + i + '"class="form-control"></td></tr>'
+        tab += '<tr><td><input id="vect-' + i + '" class="form-control"></td></tr>'
     }
 
     tab += '</tbody></table>'

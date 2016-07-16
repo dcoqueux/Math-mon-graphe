@@ -116,10 +116,13 @@
 
                     <!-- Panel matrice d'adjacence -->
                     <div id="matrice" class="panel">
-                        <h2>Matrice d'adjacence</h2>
-                        <br/>
-                        <p>La matrice d'adjacence est la matrice où le coefficient à la ligne i et la colonne j représente le nombre d'arêtes reliant les sommets i et j</p>
-                        <p>En élevant la matrice d'adjacence à la puissance k, c'est-à-dire en procédant à la multiplication de k fois la matrice d'adjacence, les coefficients de la matrice finale s'interprètent comme le nombre de chemins reliant les sommets i et j, distincts et longs de <b>k arêtes</b> </p>
+                        <div class="row">
+                            <div class="col-xs-4"><h2>Matrice d'adjacence</h2></div>
+                            <div class="col-xs-8"><button id="kesako-matrice" class="btn btn-sm btn-warning pull-right">
+                                <i class="fa fa-question"></i>
+                                <span class="btn-label"> Késako ?</span>
+                            </button></div>
+                        </div>
                         <div class="input-group">
                             <span class="input-group-addon">Longueur des chemins : </span>
                             <input type="text" id="path-length" value="1" class="form-control">
@@ -130,11 +133,13 @@
 
                     <!-- Panel marche aléatoire -->
                     <div id="marche-aleatoire" class="panel">
-                        <h2>Marche aléatoire</h2>
-                        <br/>
-                        <p>A chaque noeud, on associe une population (exprimée par son effectif ou sa fréquence). D'une étape à l'autre, ces populations migrent (ou pas) vers d'autres noeuds selon les probabilités déclarées sur chaque arc.</p>
-                        <p>Prérequis pour simuler une marche aléatoire : le graphe doit être <b>orienté</b>, tous les arcs doivent être <b>pondérées</b>, et <b>un seul arc</b> au maximum entre un même noeud de départ et un même noeud d'arrivée.</p>
-                        <p>Remarque : la probabilité de rester au sein d'un noeud est calculée automatiquement.</p>
+                        <div class="row">
+                            <div class="col-xs-4"><h2>Marche aléatoire</h2></div>
+                            <div class="col-xs-8"><button id="kesako-marche" class="btn btn-sm btn-warning pull-right">
+                                <i class="fa fa-question"></i>
+                                <span class="btn-label"> Késako ?</span>
+                            </button></div>
+                        </div>
                         <div class="row">
                             <div class="input-group col-xs-6">
                                 <span class="input-group-addon">Aller à l'étape #</span>
@@ -144,9 +149,9 @@
                                       Go ...
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="#">Résultat direct</a>
-                                        <a class="dropdown-item" href="#">Pas à pas automatique</a>
-                                        <a class="dropdown-item" href="#">Pas à pas manuel</a>
+                                        <a class="dropdown-item" id="marche-mode-1">Résultat direct</a>
+                                        <a class="dropdown-item" id="marche-mode-2">Pas à pas automatique</a>
+                                        <a class="dropdown-item" id="marche-mode-3">Pas à pas manuel</a>
                                     </div>
                                 </div>
                             </div>
@@ -165,6 +170,13 @@
 
                     <!-- Panel Djikstra -->
                     <div id="djikstra" class="panel">
+                        <div class="row">
+                            <div class="col-xs-4"><h2>Plus court chemin</h2></div>
+                            <div class="col-xs-8"><button id="kesako-djikstra" class="btn btn-sm btn-warning pull-right">
+                                <i class="fa fa-question"></i>
+                                <span class="btn-label"> Késako ?</span>
+                            </button></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -184,7 +196,7 @@
                         <input type="hidden" id="vertexX"/>
                         <input type="hidden" id="vertexY"/>
                         <div class="input-group">
-                            <input type="text" id="vertexName" class="form-control" autofocus>
+                            <input type="text" id="vertexName" class="form-control">
                             <span class="input-group-btn">
                                 <button type="button" id="createVertex" class="btn btn-primary">Valider</button>
                             </span>
@@ -206,6 +218,56 @@
                         <textarea id="json-area" class="form-control" rows="10"></textarea>
                         <br/>
                         <button type="button" class="btn btn-primary">Ok merci !</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalKesakoMatrice">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Matrice d'adjacence d'un graphe</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>La matrice d'adjacence est la matrice où le coefficient à la ligne i et la colonne j représente le nombre d'arêtes reliant le sommet i au sommet j</p>
+                        <!-- insérer une image ici -->
+                        <p>En élevant la matrice d'adjacence à la puissance k, c'est-à-dire en procédant à la multiplication de k fois la matrice d'adjacence, les coefficients de la matrice finale s'interprètent comme le nombre de chemins reliant les sommets i et j, distincts et longs de <b>k arêtes</b></p>
+                        <p>La matrice d'adjacence existe, que le graphe soit orienté ou non. Si le graphe n'est pas orienté, la matrice d'adjacence a la propriété d'être symétrique, puisqu'une arête reliant un sommet i au sommet j dans ce sens, relie réciproquement le sommet j au sommet i dans ce sens.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalKesakoMarche">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Marche alétoire dans un graphe probabiliste</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>A chaque noeud d'un graphe probabiliste, on associe une population (exprimée par son effectif ou sa fréquence). D'une étape à l'autre, ces populations migrent (ou pas) vers d'autres noeuds selon les probabilités déclarées sur chaque arc.</p>
+                        <p>Pour simuler une marche aléatoire : 
+                            <ul><li>le graphe doit être <b>orienté</b></li>
+                            <li>tous les arcs doivent être <b>pondérées</b></li>
+                            <li><b>un seul arc au maximum</b> doit relier un même noeud de départ à un même noeud d'arrivée</li></ul>
+                        Ces conditions définissent un graphe probabiliste.</p>
+                        <p>Remarque : la probabilité de rester au sein d'un noeud est calculée automatiquement (les arcs bouclant sur un sommet ne pouvant pas être tracées sur le canvas).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalKesakoDjikstra">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Algorithme de Djikstra</h4>
+                    </div>
+                    <div class="modal-body">
                     </div>
                 </div>
             </div>

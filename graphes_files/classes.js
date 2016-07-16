@@ -438,16 +438,14 @@ function Vertex(id, value, x, y){
         var edge
         for (var i = 0; i < this.edges.length; i++) {
             edge = this.edges[i]
-            if(
-                (edge.from === this && edge.to   === v) ||
-                (edge.to   === this && edge.from === v)
-            ){
+            if (edge.from === v || edge.to === v) {
                 return true
             }
         }
         return false
     }
     
+    // Retourne la liste des noeuds "voisins", càd adjacents au noeud par une arête
     this.neighbours = function(){
         var n = [], e
         for (var i = 0; i < this.edges.length; i++) {
@@ -461,7 +459,33 @@ function Vertex(id, value, x, y){
         return n
     }
 
-    this.toJSON    = function(){
+    this.predecesseurs = function() {
+        var noeuds = [];
+        var arc;
+
+        for (var i = 0; i < this.edges.length; i++) {
+            arc = this.edges[i]
+            if(this === arc.to)
+                noeuds.push(arc.from)
+        }
+
+        return noeuds;
+    }
+
+    this.successeurs = function() {
+        var noeuds = [];
+        var arc;
+
+        for (var i = 0; i < this.edges.length; i++) {
+            arc = this.edges[i]
+            if(this === arc.from)
+                noeuds.push(arc.to)
+        }
+
+        return noeuds;
+    }
+
+    this.toJSON = function(){
         return { id: this.id, value: this.value, x: this.x, y: this.y } // No style support yet
     }
     

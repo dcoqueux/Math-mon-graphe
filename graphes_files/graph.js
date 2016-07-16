@@ -64,12 +64,12 @@ function evtPosition(evt, canvas) {
     // Abscisse
     var x = (!is_undefined(evt.clientX) ? evt.clientX : 
         (is_undefined(evt.offsetX) ? evt.x : evt.offsetX)
-    ) - o.left
+    ) - o.left;
 
-    // Ordonnée
+    // Ordonnée (/!\ au scroll)
     var y = (!is_undefined(evt.clientY) ? evt.clientY : 
         (is_undefined(evt.offsetY) ? evt.y : evt.offsetY)
-    ) - o.top
+    ) - o.top + $(document).scrollTop();
 
     return [x,y]
 }
@@ -282,7 +282,8 @@ function finishAddVertex(x, y, cx){
     if(x >= 0 && y >= 0){
         $("#vertexX").val(x);
         $("#vertexY").val(y);
-        $( "#modalCreationVertex" ).modal('show');
+        $(" #modalCreationVertex ").modal('show');
+        $(" #vertexName ").click(); // Ne fonctionne pas. TODO : à corriger
     }
 }
 
@@ -682,12 +683,34 @@ function marcheAleatoire() {
     }
 
     matriceTransition = graph.transitionMatrix(false);
-    if (matriceTransition == null)
-        $(" #tab-marche ").html("Erreur dans la génération de la matrice");
-    else
+    if (matriceTransition == null) {
+        $(" #tab-marche ").html(htmlMessages.erreurMatrice);
+        $(" #tab-etat ").html("");
+    } else {
         $(" #tab-marche ").html(formatMatrix(matriceTransition, false));
-
-    $(" #tab-etat ").html(formatEtatProbabiliste());
+        $(" #tab-etat ").html(formatEtatProbabiliste());
+    }
     
     $(" #marche-aleatoire ").show();
+}
+
+
+/*
+ *  Exécution de l'algorithme de Djikstra pour la recherche du plus court chemin
+ *  Fonctionne aussi bien pour des graphes orientés ou non orientés
+ */
+function algoDjikstra(noeudDep) {
+    /*
+    P = [] // liste de noeuds
+    sommet.value = Infinity // pour chaque sommet, sauf pour
+    noeudDep.value = 0
+
+    Tant qu il existe un sommet n appartenant pas à P :
+        Choisir un sommet s1 hors de P de plus petite valeur
+        Mettre ce sommet dans P
+        Pour chaque sommet s2 voisin de s1 n appartenant pas à P :
+            s2.value = min(s2.value, s1.value + arete(a,b).value)
+        Fin Pour
+    Fin Tant Que
+    */
 }
