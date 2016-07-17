@@ -3,12 +3,7 @@
 // Graphe -------------------------------------------------------------------------------
 
 function Graph(){
-    // Constructeur
-    if(typeof vertices == undef){ vertices = [] }
-    if(typeof vertices != obj){ return false }
-    if(typeof edges == undef){ edges = [] }
-    if(typeof edges != obj){ return false }
-
+    // Initialisation
     this.vertices = []
     this.edges    = []
     this.directed = false
@@ -79,26 +74,17 @@ function Graph(){
     }
     
     this.toJSON = function(){
-        var o = { vertices: [], edges: [], x: this.x, y: this.y }
+        var json = { vertices: [], edges: [] }
+
         for (var i = 0; i < this.vertices.length; i++) {
-            o.vertices.push(this.vertices[i].toJSON())
+            json.vertices.push(this.vertices[i].toJSON())
         }
+
         for (var i = 0; i < this.edges.length; i++) {
-            o.edges.push(this.edges[i].toJSON())
+            json.edges.push(this.edges[i].toJSON())
         }
-        return o
-    }
-    
-    // Liste des degrés des noeuds du graphe (TODO : a supprimer ?)
-    this.degreeSeq = function(){
-        var seq = [], v
-        for (var i = 0; i < this.vertices.length; i++) {
-            v = this.vertices[i]
-            if(v instanceof Vertex){
-                seq.push(v.getDegree())
-            }
-        }
-        return seq
+
+        return json
     }
     
     // Determine la liste des éléments du graphe dans le rectangle de sélection
@@ -124,15 +110,6 @@ function Graph(){
     }
 
     // ===== Adjacence, matrices ... Utilise la bibliothèque sylvester =====
-    
-    this.adjacencyList = function(){
-        var l = [], e
-        for (var i = 0; i < this.edges.length; i++) {
-            e = this.edges[i]
-            l.push([e.from, e.to])
-        }
-        return l
-    }
     
     /*
      *  Retourne la matrice d'adjacence du graphe
@@ -205,9 +182,13 @@ function Graph(){
     }
     
     this.degreeMatrix = function(mobj){
-        var ds = this.degreeSeq()
+        var seq = []
+        for (var i = 0; i < this.vertices.length; i++) {
+            seq.push(this.vertices[i].getDegree())
+        }
+
         var dl = (ds.length > 0)
-        var DM = dl ? Matrix.Diagonal(ds) : $M([0])
+        var DM = dl ? Matrix.Diagonal(seq) : $M([0])
         return mobj ? DM : (dl ? DM.elements : [])
     }
     
@@ -364,22 +345,31 @@ function Vertex(id, value, x, y){
     this.weigh  = ""            // Poids (ex : fréquence, probabilité)
     this.x      = Math.round(x) // Abscisse
     this.y      = Math.round(y) // Ordonnée
-    this.edges  = []            // Arêtes ou arcs liées au noeud
     this.style  = defaultStyle
+
+    //  Liste d'objets de la forme: {
+    //      'obj' : arête/arc partant de/arrivant à ce noeud,
+    //      'linkedTo' : noeud associé à ce noeud par l'arête/arc indexé à 'obj'
+    //      'isOrigin' : booléen, vrai si ce noeud est le noeud de départ, faux sinon
+    //  }
+    this.edges  = []
     
     // ===== Constructeur et destructeur =====
 
     this.attach = function(){ graph.vertices.push(this) }
     
     this.detach = function() {
+        // Liste des noeuds du graphe
         listRemove(graph.vertices, this)
         
+        // Liste des éléments sélectionnés
         if (this.id in selected) { 
             delete selected[this.id]
         }
 
+        // Suppression des arêtes/arcs lié(e)s à ce noeud
         for (var i = this.edges.length - 1; i >= 0; i--) {
-            this.edges[i].detach()
+            this.edges[i].obj.detach()
         }
     }
 
@@ -416,57 +406,50 @@ function Vertex(id, value, x, y){
         deg = 0
 
         for (var i = 0; i < this.edges.length; i++) {
-            edge = this.edges[i];
-            if (edge.from === this) {
-                deg++;
+            edgeOrigin = this.edges[i].isOrigin;
+
+            if (edgeOrigin == null || edgeOrigin == undefined) {
+                dlog(["WARNING", "origine de l'arête non définie"]);
             }
-            else if (edge.to === this) {
-                if (graph.directed) {
-                    deg--;
-                } else {
-                    deg++;
+            else {
+                if (edgeOrigin) { deg++; }
+                else {
+                    if (graph.directed) { deg--; } else { deg++; }
                 }
-            } else {
-                dlog(["WARNING", "arête associé à un noeud qui ne lui est pas attaché"]);
             }
         }
 
         return deg;
     }
     
+    // Ce noeud est-il associé au noeud v par un arc / une arête ?
     this.isNeighbour = function(v){
-        var edge
         for (var i = 0; i < this.edges.length; i++) {
-            edge = this.edges[i]
-            if (edge.from === v || edge.to === v) {
+            if (this.edges[i].linkedTo === v) {
                 return true
             }
         }
+
         return false
     }
     
-    // Retourne la liste des noeuds "voisins", càd adjacents au noeud par une arête
+    // Retourne la liste des noeuds "voisins", càd adjacents au noeud par une arête / un arc
     this.neighbours = function(){
-        var n = [], e
+        var neighbours = []
+
         for (var i = 0; i < this.edges.length; i++) {
-            e = this.edges[i]
-            if(e.from === this){
-                n.push(e.to)
-            } else if(e.to === this){
-                n.push(e.from)
-            }
+            neighbours.push(this.edges[i].linkedTo);
         }
-        return n
+
+        return neighbours
     }
 
     this.predecesseurs = function() {
         var noeuds = [];
-        var arc;
 
         for (var i = 0; i < this.edges.length; i++) {
-            arc = this.edges[i]
-            if(this === arc.to)
-                noeuds.push(arc.from)
+            if(!this.edges[i].isOrigin)
+                noeuds.push(this.edges[i].linkedTo)
         }
 
         return noeuds;
@@ -474,19 +457,17 @@ function Vertex(id, value, x, y){
 
     this.successeurs = function() {
         var noeuds = [];
-        var arc;
 
         for (var i = 0; i < this.edges.length; i++) {
-            arc = this.edges[i]
-            if(this === arc.from)
-                noeuds.push(arc.to)
+            if(this.edges[i].isOrigin)
+                noeuds.push(this.edges[i].linkedTo)
         }
 
         return noeuds;
     }
 
     this.toJSON = function(){
-        return { id: this.id, value: this.value, x: this.x, y: this.y } // No style support yet
+        return { id: this.id, value: this.value, x: this.x, y: this.y }
     }
     
     this.attach()
@@ -510,8 +491,8 @@ function Edge(id, value, from, to){
 
     this.attach = function() {
         graph.edges.push(this)
-        this.from.edges.push(this)
-        this.to.edges.push(this)
+        this.from.edges.push({ 'obj': this, 'linkedTo': this.to, 'isOrigin': true })
+        this.to.edges.push({ 'obj': this, 'linkedTo': this.from, 'isOrigin': false })
     }
     
     this.detach = function() {
@@ -521,8 +502,14 @@ function Edge(id, value, from, to){
             delete selected[this.id]
         }
 
-        listRemove(this.from.edges, this)
-        listRemove(this.to.edges, this)
+        for (var i = 0; i < this.from.edges.length; i++) {
+            if (this.from.edges[i].obj === this)
+                this.from.edges.splice(i, 1)
+        }
+        for (var i = 0; i < this.to.edges.length; i++) {
+            if (this.to.edges[i].obj === this)
+                this.to.edges.splice(i,1)
+        }
     }
 
     // ===== =====
@@ -581,32 +568,37 @@ function Edge(id, value, from, to){
     }
     
     // Supprime l'arête et fusionne les noeuds adjacents liés par l'arête
-    // Le noeud de départ est conservé
+    // Le noeud d'arrivée est supprimé, tout est transféré au noeud de départ
     this.contract = function(){
-        var edge
+        var edge, linkedNode, isOrigin
         this.detach()
 
         // Avant sa suppression, on récupère les arêtes du noeud
         for (var i in this.to.edges) {
-            edge = this.to.edges[i]
+            edge = this.to.edges[i].obj
 
             // Arêtes entrantes
             if(edge.to == this.to){
                 edge.to = this.from
+                linkedNode = edge.from
+                isOrigin = false
             }
             // Arêtes sortantes
             if(edge.from == this.to){
                 edge.from = this.from
+                linkedNode = edge.to
+                isOrigin = true
             }
 
             // Les arêtes du même groupe que celle contractante est une boucle
             // Pour l'instant, suppression
-            if(edge.from == edge.to){
+            if (edge.from == edge.to) {
                 edge.detach()
             }
-
-            // Récupération après réaffectation
-            this.from.edges.push(edge)
+            else {
+                // Récupération après réaffectation
+                this.from.edges.push({ 'obj': edge, 'linkedTo': linkedNode, 'isOrigin' : isOrigin });
+            }
         }
 
         dlog(["Fusion des noeuds", this.from.value, this.to.value])

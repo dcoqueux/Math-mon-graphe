@@ -634,17 +634,16 @@ function displayElements(panel){
     
     // Clic handler sur les éléments du panneau latéral
     $("a", list).click(function(evt){
-        var id = this.parentNode.id.split("-")
+        var [elt_type, id] = this.parentNode.id.split("-")
         var elt = null
         evt.preventDefault()
 
-        if(id.length > 1 && is_numeric(id[1])) {
-
+        if(is_numeric(id)) {
             // Détermination de l'élément sélectionné
-            if(id[0] == "vertex"){
-                elt = graph.vertices[id[1]]
-            } else if(id[0] == "edge"){
-                elt = graph.edges[id[1]]
+            if (elt_type == "vertex") {
+                elt = graph.vertices[id]
+            } else if (elt_type == "edge") {
+                elt = graph.edges[id]
             }
 
             // Sélection multiple ?
@@ -700,17 +699,33 @@ function marcheAleatoire() {
  *  Fonctionne aussi bien pour des graphes orientés ou non orientés
  */
 function algoDjikstra(noeudDep) {
-    /*
-    P = [] // liste de noeuds
-    sommet.value = Infinity // pour chaque sommet, sauf pour
-    noeudDep.value = 0
+    var visited = []
+    var selected = noeudDep;
 
-    Tant qu il existe un sommet n appartenant pas à P :
-        Choisir un sommet s1 hors de P de plus petite valeur
-        Mettre ce sommet dans P
-        Pour chaque sommet s2 voisin de s1 n appartenant pas à P :
-            s2.value = min(s2.value, s1.value + arete(a,b).value)
-        Fin Pour
-    Fin Tant Que
-    */
+    // Initialisation des valuations des noeuds pour l'algorithme
+    for (var i = 0; i < graph.vertices; i++) {
+        if (graph.vertices[i] === noeudDep)
+            graph.vertices[i].weigh = 0
+        else
+            graph.vertices[i].weigh = Infinity
+    }
+
+    // Tant que l'on ne s'est pas interessé à tous les noeuds
+    while (visited.length != graph.vertices.length) {
+        // Choisir un sommet s1 hors de P de plus petite valeur
+        for (var i = 0; i < graph.vertices; i++) {
+            if ( !(graph.vertices[i] in P) && graph.vertices[i].weigh <= selected )
+                selected = graph.vertices[i];
+        }
+
+        // Mettre ce sommet dans P
+        P.push(selected)
+
+        // Pour chaque sommet s2 voisin de s1 n appartenant pas à P :
+        successeurs = (graph.directed) ? selected.successeurs() : selected.neighbours();
+        for (var i = 0; i < successeurs.length; i++) {
+            if ( !(successeurs[i] in P) )
+                successeurs[i].weigh = Math.min(successeurs[i].weigh, selected.weigh /*+ edge.value*/)
+        }
+    }
 }
