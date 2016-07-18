@@ -1,58 +1,56 @@
-// GRAPH JS : Preliminaires =============================================================
+// GRAPH JS : Preliminaires ======================================================================================
 
 // Variables types
-var nb        = "number",
-    str       = "string",
-    obj       = "object",
-    bool      = "boolean",
-    undef     = "undefined"
+var nb         = "number",
+    str        = "string",
+    obj        = "object",
+    bool       = "boolean",
+    undef      = "undefined"
 
-var uimode    = 0,
-    dragging  = false, 
-    moved     = false, 
-    tmp_edge  = [null, null], 
-    dontclick = false,
-    selected  = [],
-    hovered   = null,
-    modal     = null
+var uimode     = 0,
+    dragging   = false, 
+    moved      = false, 
+    tmp_edge   = [null, null], 
+    dontclick  = false,
+    hovered    = null
 
-var touch     = "createTouch" in document
-var click     = touch ? "tap" : "click"
-var elt_id    = 1
-
-var graph     = null
+var touch      = "createTouch" in document
+var click      = touch ? "tap" : "click"
+var elt_id     = 1
 
 var canvas_elt = null,
     canvas     = null,
     context    = null
 
-// Données de l'interface utilisateur
-var ui = { 
-    properties: null,
-    elements: null
-}
+var graph      = null
+var uiToolbox  = null
+var selected   = []
 
 
-// Constantes ---------------------------------------------------------------------------
+// Constantes ----------------------------------------------------------------------------------------------------
 
 
-var GJ_TOOL_SELECT          = 0, // Mode manipulation du graphe
-    GJ_TOOL_ADD_EDGE        = 1, // Mode ajout de noeud
-    GJ_TOOL_ADD_VERTEX      = 2, // Mode ajout d'arête
-    GJ_TOOL_SELECT_VERTEX   = 3, // Mode sélection d'arête
-    GJ_TOOL_SELECT_EDGE     = 4 // Mode sélection de noeud
+var GJ_TOOL_SELECT        = 0, // Mode manipulation du graphe
+    GJ_TOOL_ADD_EDGE      = 1, // Mode ajout de noeud
+    GJ_TOOL_ADD_VERTEX    = 2, // Mode ajout d'arête
+    GJ_TOOL_SELECT_VERTEX = 3, // Mode sélection d'arête
+    GJ_TOOL_SELECT_EDGE   = 4  // Mode sélection de noeud
+
+var TOOLBOX_INFO                = 10,
+    TOOLBOX_MATRICE_ADJACENCE   = 11,
+    TOOLBOX_MARCHE_ALEATOIRE    = 12,
+    TOOLBOX_ALGORITHME_DIJKSTRA = 13
 
 var RAYON_NOEUD = 15
 var EDGE_SPACE = 150
 
 
-// Style -------------------------------------------------------------------------------
+// Style ---------------------------------------------------------------------------------------------------------
 
 
 function ElementStyle(strokecolor, fillcolor, strokewidth){
     if(typeof strokewidth  != nb || strokewidth  <= 0){ strokewidth  = 1.2 }
 
-    //this.id           = ++elt_id
     this.shape        = "circle"
     this.strokecolor  = strokecolor
     this.fillcolor    = fillcolor
@@ -73,7 +71,7 @@ var selectedStyle = new ElementStyle("rgba(39,166,255,0.5)", "transparent", 5)
 var labelStyle    = new ElementStyle("transparent", "#fff", 0)
 
 
-// Gestion des fenêtres modales ---------------------------------------------------------
+// Gestion des fenêtres modales ----------------------------------------------------------------------------------
 
 $(document).ready(function() {
 
@@ -95,6 +93,13 @@ $(document).ready(function() {
         $( "#modalCreationVertex" ).modal('hide');
     });
 
+    // Clic sur le bouton de chargement de graphe à partir d'une description JSON
+    $(" #loadGraph ").on("click", function() {
+        loadGraphFromJSON($(" #json-area-import ").val());
+        $( "#modalLoadGraph" ).modal('hide');
+        $(" #json-area-import ").val('');
+    });
+
     // Touche entrée --> validation du nom du noeud
     $(" #vertexName ").on("keypress", function(args) {
         if (args.keyCode == 13 && $(" #modalCreationVertex ").hasClass('in')) {
@@ -111,10 +116,10 @@ $(document).ready(function() {
     // Modales d'aide
     $(document).on("click", "#kesako-matrice", function() { $(" #modalKesakoMatrice ").modal('show') });
     $(document).on("click", "#kesako-marche", function() { $(" #modalKesakoMarche ").modal('show') });
-    $(document).on("click", "#kesako-djikstra", function() { $(" #modalKesakoDjikstra ").modal('show') });
+    $(document).on("click", "#kesako-dijkstra", function() { $(" #modalKesakoDijkstra ").modal('show') });
 })
 
-// Fonctions utiles ---------------------------------------------------------------------
+// Fonctions utiles ----------------------------------------------------------------------------------------------
 
 
 function is_undefined(x){ 
@@ -162,6 +167,7 @@ function ucf(str){
 function is_numeric(mixed_var) { 
     return (typeof(mixed_var) == nb || typeof(mixed_var) == str) && mixed_var !== '' && !isNaN(mixed_var); 
 }
+
 function trimArray(array) { 
     var a = []; 
     for (var e = 0; e < array.length; e++) { 

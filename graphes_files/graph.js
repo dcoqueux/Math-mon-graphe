@@ -97,7 +97,7 @@ function canvasMove(evt){
         if(hovered != null){
             // Set selection
             if(!inArray(hovered, selected)){
-                setSelected(hovered, evt, context)
+                setSelected(hovered, evt)
                 tmp_edge = [x,y]
             }
             // Drag each selected element
@@ -115,7 +115,7 @@ function canvasMove(evt){
                     el.y = Math.max(5, el.oy + (y - tmp_edge[1]))
                 }
             }
-            updateState() // <-- Inefficient
+            updateState()
         } else {
             // We're dragging a rectangle of selection
             var selection  = graph.elementsWithinRect(tmp_edge[0], tmp_edge[1], x, y)
@@ -161,7 +161,7 @@ function canvasClick(evt){
 
         if (uimode == GJ_TOOL_SELECT) {
             dlog(["Clic", "Manipulation canvas"])
-            setSelected(elmt, evt, context)
+            setSelected(elmt, evt)
             updateState()
         }
         if(uimode == GJ_TOOL_SELECT && shortcutShift && elmt instanceof Vertex){
@@ -214,7 +214,7 @@ function canvasKey(evt){
             }
 
             drawAll()
-            displayInfo(ui.properties, selected)
+            fillInfobox(selected)
         }
     }
 }
@@ -226,6 +226,7 @@ function canvasKey(evt){
  */
 function startAddEdge(){
     var msg = $(htmlMessages.nvlArete)
+    $(" #info ").empty().append(msg)
     
     // Activation du bouton d'annulation de création
     $("#cancelEdge", msg).click(function(){ 
@@ -233,8 +234,6 @@ function startAddEdge(){
         tmp_edge = [null,null];
         updateState();
     })
-
-    ui.properties.empty().append(msg)
 
     selected = [null]
     tmp_edge = [null,null]
@@ -248,6 +247,7 @@ function startAddEdge(){
  */
 function startAddVertex(){
     var msg = $(htmlMessages.nvNoeud)
+    $(" #info ").empty().append(msg)
 
     // Activation du bouton d'annulation de création
     $("#cancelVertex", msg).click( function(){ 
@@ -258,7 +258,6 @@ function startAddVertex(){
     selected = [null]
     tmp_edge = [null,null]
     updateState(false)
-    ui.properties.empty().append(msg)
     setUimode(GJ_TOOL_ADD_VERTEX)
 }
 
@@ -280,8 +279,8 @@ function finishAddEdge(cx){
  */
 function finishAddVertex(x, y, cx){
     if(x >= 0 && y >= 0){
-        $("#vertexX").val(x);
-        $("#vertexY").val(y);
+        $(" #vertexX ").val(x);
+        $(" #vertexY ").val(y);
         $(" #modalCreationVertex ").modal('show');
         $(" #vertexName ").click(); // Ne fonctionne pas. TODO : à corriger
     }
@@ -388,10 +387,10 @@ function setUimode(mode){
  *  Ramener l'action de l'utilisateur à la manipulation du canvas
  */
 function clearUimode(){
-    setUimode(GJ_TOOL_SELECT)
-    tmp_edge = [null, null]
-    selected = [null]
-    updateState()
+    setUimode(GJ_TOOL_SELECT);
+    tmp_edge = [null, null];
+    selected = [];
+    updateState();
 }
 
 
@@ -400,38 +399,26 @@ function clearUimode(){
 /*
  *  Met à jour la liste des éléments du graphe sélectionnés par l'utilisateur
  */
-function setSelected(el, evt, cx){
+function setSelected(el, evt){
     var shift = (typeof evt != undef && evt != null && "shiftKey" in evt && evt.shiftKey)
+    // On clique à côté d'un élément sans maintenir la sélection courante
+    if (!shift)
+        selected = []
 
-    if(typeof el != obj){ el = null }
-
-    if(el == null || el instanceof Vertex || el instanceof Edge){
-        if(selected.length <= 0 || (selected.length > 0 && el != selected[0])){
-            if(selected.length > 0 && shift){
-                ui.properties.html(htmlMessages.multiselection)
-            } else {
-                // Sélection simple : affichage des propriétés de l'élément
-                displayInfo(ui.properties, el, cx)
-            }
-        }
-
-        /*if (shift) { selected.push(el) } else { selected = [el] }*/
-        
-        // Màj de la liste des éléments selectionnés
-        if(!shift){ selected = [] }
-        selected[el == null ? 0 : el.id] = el
-    }
+    // Màj de la liste des éléments selectionnés
+    if (el instanceof Vertex || el instanceof Edge)
+        selected[el.id] = el
 }
 
 
 /*
  *  Demande la confirmation pour rendre le canvas vierge
  */
-function clearCanvas(force){
-    if(force || confirm("Voulez-vous supprimer le graphe actuel ? L'action est irréversible.")) {
+function clearCanvas(){
+    if(confirm("Voulez-vous supprimer le graphe actuel ? L'action est irréversible.")) {
         graph.detach();
         new Graph();
-        selected = [null]
+        selected = []
         updateState()
     }
 }
@@ -478,7 +465,7 @@ function computeCurveParameters(nbAretes, numArete, arete) {
  *  Demande la confirmation de suppression d'un noeud / d'une arête,
  *  et supprime l'élément auquel cas.
  */
-function removeElement(el, graph, cx){
+function removeElement(el, graph){
     var type_elt = el instanceof Vertex ? "du noeud" : "de l'arête";
     dlog("Suppression " + type_elt);
 
@@ -490,61 +477,38 @@ function removeElement(el, graph, cx){
     return rep
 }
 
-/*
- *  Construit un graphe à partir d'un fichier JSON
- *  TODO : inclure cette méthode dans la classe Graph et utiliser loadGraphFromJson
- */
-function graphFromJSON(json){
-    if (typeof json != str) { return null }
-    var saveGraph = graph;
-
-    try {
-        var obj = JSON.parse(json)
-        graph.detach();
-        new Graph();
-
-        var v, from, to
-
-        for (var i in obj.vertices) {
-            vertex = obj.vertices[i]
-            graph.addVertex([vertex.x, vertex.y], vertex.value);
-        }
-
-        for (var i in obj.edges) {
-            edge = obj.edges[i]
-
-            // Trouver un moyen de faire le lien noeud / arête
-            /*for(var i in graph.vertices){
-                v = graph.vertices[i]
-                if(v.id == edge.from){
-                    from = v
-                }
-                if(v.id == edge.to){
-                    to = v
-                }
-            }*/
-            graph.addEdge([from, to])
-        }
-
-    } catch(e) {
-        graph = saveGraph;
-        return null
-    }
-
-    return graph
-}
-
 
 /*
  *  Génère le graphe dans le canvas
  *  à partir du JSON à entrer dans la pop-in
  */
-function loadGraphFromJSON() {
-    var json = prompt("Importez le graphe en insérant sa description en JSON ci-dessous"); 
-    if (json != null && json.length > 0) { 
-        clearCanvas(true); 
-        graph = null; 
-        graphFromJSON(json); 
+function loadGraphFromJSON(json) {
+    if (typeof json == str && json.length > 0) {
+        var saveGraph = graph;
+
+        try {
+            var obj = JSON.parse(json)
+            graph.detach();
+            new Graph();
+
+            var v, from, to
+
+            for (var i in obj.vertices) {
+                vertex = obj.vertices[i]
+                graph.addVertex([vertex.x, vertex.y], vertex.value);
+            }
+
+            for (var i in obj.edges) {
+                edge = obj.edges[i]
+                from = graph.getVertexByName(edge.from)
+                to = graph.getVertexByName(edge.to)
+                graph.addEdge([from, to])
+            }
+        } catch(e) {
+            dlog(e);
+            graph = saveGraph;
+        }
+
         drawAll();
     }
 }
@@ -559,67 +523,67 @@ function saveGraphToJSON() {
     $(" #modalSaveGraph ").modal('show')
 }
 
-// Méthodes d'affichage des données sur l'interface -------------------------------------
+// Méthodes d'affichage des données sur l'interface --------------------------------------------------------------
 
 /*
  *  Mise à jour de l'affichage
  */
 function updateState(info){
-    // Canvas
+    // Propriétés
+    if (info != false)
+        fillInfobox(selected)
+
+    // Canvas : redimensionnement et recréation du graphe
     context.canvas.width = $("#canvas-container").width()
     drawAll()
-    // Propriétés
-    if(info != false){ 
-        displayInfo(ui.properties, selected) 
-    }
-    // Elements
-    displayElements(ui.elements)
+
+    // Mise à jour de la liste des éléments (panneau latéral)
+    displayElements()
 }
 
 
 /*
  *  Génère le contenu de l'infobox en bas de l'écran
  */
-function displayInfo(panel, el, cx){
-    if(!cx){ cx = context }
+function fillInfobox(elt) {
+    if (elt instanceof Array) {
+        elt = trimArray(elt)
 
-    if (el instanceof Array) {
-        el = trimArray(el)
-        if (el.length > 1) {
-            panel.html(htmlMessages.multiselection)
+        if (elt.length > 1) {
+            $(" #info ").html(htmlMessages.multiselection)
             return
         } else {
-            el = el[0]
+            elt = elt[0]
         }
     }
 
-    if(el != null){
+    if(elt != null){
         // ===== Infobox Noeud =====
-        if(el instanceof Vertex){
-            var info = $(formatInfoboxVertex(el))
+        if(elt instanceof Vertex){
+            var info = $(formatInfoboxVertex(elt))
         }
         // ===== Infobox Arête =====
-        else if(el instanceof Edge){
-            var info = $(formatInfoboxEdge(el))
-            $(".contractbtn", info).click(function(){ el.contract(); updateState() })
+        else if(elt instanceof Edge){
+            var info = $(formatInfoboxEdge(elt))
+            $(".contractbtn", info).click(function(){ elt.contract(); updateState() })
         }
-        $("input#label", info).keyup (function(){ el.value = this.value; drawAll() })
-        $("input#label", info).change(function(){ el.value = this.value; updateState() })
-        $(".removebtn", info).click(function(){ removeElement(el, graph, cx) })
+        $("input#label", info).keyup (function(){ elt.value = this.value; drawAll() })
+        $("input#label", info).change(function(){ elt.value = this.value; updateState() })
+        $(".removebtn", info).click(function(){ removeElement(elt, graph) })
 
     // ===== Infobox Graphe =====
     } else {
         var info  = $(formatInfoboxGraph())
         $(".adjustbtn", info).click(function(){ graph.readjust(); updateState(); })
     }
-    panel.empty().append(info)
+    $(" #info ").empty().append(info)
 }
 
 
 /*
  *  Affiche les éléments du graphe dans le panneau latéral
  */
-function displayElements(panel){
+function displayElements(){
     var list = ""
 
     // Noeuds
@@ -640,30 +604,43 @@ function displayElements(panel){
 
         if(is_numeric(id)) {
             // Détermination de l'élément sélectionné
-            if (elt_type == "vertex") {
+            if (elt_type == "vertex")
                 elt = graph.vertices[id]
-            } else if (elt_type == "edge") {
+            else if (elt_type == "edge")
                 elt = graph.edges[id]
-            }
 
             // Sélection multiple ?
-            if (evt.ctrlKey) {
+            if (evt.ctrlKey)
                 selected.push(elt)
-            } else {
+            else
                 selected = [elt]
-            }
         }
         updateState()
     })
-    $("ul.elements", panel).empty().append(list)
+    $("ul.elements", "#elements").empty().append(list)
 }
 
-function matriceAdjacence() {
-    /*ui.properties.hide();
-    ui.properties = $("#matrice");
-    ui.properties.show();*/
-    ui.properties.hide();
 
+function displayToolbox(toolname) {
+    uiToolbox.hide();
+
+    if (toolname == TOOLBOX_INFO)
+        uiToolbox = $(" #info ");
+    else if (toolname == TOOLBOX_MATRICE_ADJACENCE)
+        uiToolbox = $(" #matrice ");
+    else if (toolname == TOOLBOX_MARCHE_ALEATOIRE)
+        uiToolbox = $(" #marche-aleatoire ");
+    else if (toolname == TOOLBOX_ALGORITHME_DIJKSTRA)
+        uiToolbox = $(" #dijkstra ");
+
+    uiToolbox.show();
+}
+
+
+// Méthodes des toolbox ------------------------------------------------------------------------------------------
+
+function matriceAdjacence() {
+    displayToolbox(TOOLBOX_MATRICE_ADJACENCE);
     
     $(" #matrice ").show();
     matrice = graph.adjacencyMatrix( false, parseInt($(" #path-length ").val()) );
@@ -675,7 +652,8 @@ function matriceAdjacence() {
 
 
 function marcheAleatoire() {
-    ui.properties.hide();
+    displayToolbox(TOOLBOX_MARCHE_ALEATOIRE);
+
     if (!graph.directed) {
         graph.directed = true;
         updateState();
@@ -695,15 +673,17 @@ function marcheAleatoire() {
 
 
 /*
- *  Exécution de l'algorithme de Djikstra pour la recherche du plus court chemin
+ *  Exécution de l'algorithme de Dijkstra pour la recherche du plus court chemin
  *  Fonctionne aussi bien pour des graphes orientés ou non orientés
  */
-function algoDjikstra(noeudDep) {
+function algoDijkstra(noeudDep) {
+    displayToolbox(TOOLBOX_ALGORITHME_DIJKSTRA)
+
     var visited = []
     var selected = noeudDep;
 
     // Initialisation des valuations des noeuds pour l'algorithme
-    for (var i = 0; i < graph.vertices; i++) {
+    /*for (var i = 0; i < graph.vertices; i++) {
         if (graph.vertices[i] === noeudDep)
             graph.vertices[i].weigh = 0
         else
@@ -725,7 +705,7 @@ function algoDjikstra(noeudDep) {
         successeurs = (graph.directed) ? selected.successeurs() : selected.neighbours();
         for (var i = 0; i < successeurs.length; i++) {
             if ( !(successeurs[i] in P) )
-                successeurs[i].weigh = Math.min(successeurs[i].weigh, selected.weigh /*+ edge.value*/)
+                successeurs[i].weigh = Math.min(successeurs[i].weigh, selected.weigh) //+ edge.value)
         }
-    }
+    }*/
 }

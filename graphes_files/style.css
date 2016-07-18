@@ -61,7 +61,7 @@ h1 {
 	margin-bottom: 5px;
 }
 
-#matrice, #marche-aleatoire, #djikstra {
+#matrice, #marche-aleatoire, #dijkstra {
 	display: none;
 }
 
@@ -141,6 +141,20 @@ h1 {
 
 #elements ul.elements {
 	max-height: 300px;
+}
+
+.bs-callout {
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #eee;
+    border-left-width: 5px;
+    border-radius: 3px;
+    border-left-color: #5bc0de;
+    font-size: 14px;
+}
+
+.bs-callout p:last-child {
+    margin-bottom: 0;
 }
 
 @media (max-width: 1000px) {

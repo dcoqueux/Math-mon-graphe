@@ -26,9 +26,9 @@ function Graph(){
         }
     }
     
-    this.addEdge = function(e){
+    this.addEdge = function(e, value){
         if(e instanceof Array && e.length == 2) {
-            e = new Edge(elt_id++, "", e[0], e[1])
+            e = new Edge(elt_id++, value, e[0], e[1])
         }
 
         if (e instanceof Edge && inArray(e.from, this.vertices) && inArray(e.to, this.vertices)) {
@@ -87,7 +87,9 @@ function Graph(){
         return json
     }
     
-    // Determine la liste des éléments du graphe dans le rectangle de sélection
+    // Determine la liste des sommets du graphe dans le rectangle de sélection
+    // Pas besoin des arêtes, si suppression ou déplacement des sommets,
+    // les arêtes seront supprimées ou déplacées avec.
     this.elementsWithinRect = function(x1, y1, x2, y2){
         var xh  = Math.max(x1, x2),
             xl  = Math.min(x1, x2),
@@ -104,9 +106,17 @@ function Graph(){
             }
         }
 
-        // Edges
-        // ????
         return els
+    }
+
+    // Retrouve un sommet par son nom (et non par son id). Si plusieurs sommets portent le même nom,
+    this.getVertexByName = function(name) {
+        for (var i = 0; i < this.vertices.length; i++) {
+            if (this.vertices[i].value == name)
+                return this.vertices[i]
+        }
+
+        return null
     }
 
     // ===== Adjacence, matrices ... Utilise la bibliothèque sylvester =====
@@ -433,41 +443,23 @@ function Vertex(id, value, x, y){
         return false
     }
     
-    // Retourne la liste des noeuds "voisins", càd adjacents au noeud par une arête / un arc
+    /*
+     *  Si graphe non orienté, retourne la liste des sommets adjacents à ce sommet
+     *  Si graphe orienté, retourne la liste des sommets à la fin de tout arc partant de ce sommet
+     */
     this.neighbours = function(){
         var neighbours = []
 
         for (var i = 0; i < this.edges.length; i++) {
-            neighbours.push(this.edges[i].linkedTo);
+            if (!graph.directed || this.edges[i].isOrigin)
+                neighbours.push(this.edges[i].linkedTo);
         }
 
         return neighbours
     }
 
-    this.predecesseurs = function() {
-        var noeuds = [];
-
-        for (var i = 0; i < this.edges.length; i++) {
-            if(!this.edges[i].isOrigin)
-                noeuds.push(this.edges[i].linkedTo)
-        }
-
-        return noeuds;
-    }
-
-    this.successeurs = function() {
-        var noeuds = [];
-
-        for (var i = 0; i < this.edges.length; i++) {
-            if(this.edges[i].isOrigin)
-                noeuds.push(this.edges[i].linkedTo)
-        }
-
-        return noeuds;
-    }
-
     this.toJSON = function(){
-        return { id: this.id, value: this.value, x: this.x, y: this.y }
+        return { value: this.value, x: this.x, y: this.y }
     }
     
     this.attach()
@@ -609,12 +601,7 @@ function Edge(id, value, from, to){
     }
     
     this.toJSON  = function(){
-        return { 
-            id: this.id, 
-            value: this.value, 
-            from: this.from.id, 
-            to: this.to.id
-        }
+        return { from: this.from.value, to: this.to.value, value: this.value }
     }
     
     // Retourne un nom de groupe pour les arêtes reliant les mêmes noeuds

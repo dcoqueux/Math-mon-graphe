@@ -104,9 +104,9 @@
                             <i class="fa fa-map-signs"></i>
                             <span class="btn-label"> Marche aléatoire</span>
                         </button>
-                        <button class="btn btn-secondary" data-toggle="tooltip" title="Recherche du plus court chemin" data-placement="bottom">
+                        <button id="btndijkstra" class="btn btn-secondary" data-toggle="tooltip" title="Recherche du plus court chemin" data-placement="bottom">
                             <i class="fa fa-rocket"></i>
-                            <span class="btn-label"> Algorithme de Djikstra</span>
+                            <span class="btn-label"> Algorithme de Dijkstra</span>
                         </button>
                     </div>
 
@@ -168,15 +168,16 @@
                         </div>
                     </div>
 
-                    <!-- Panel Djikstra -->
-                    <div id="djikstra" class="panel">
+                    <!-- Panel Dijkstra -->
+                    <div id="dijkstra" class="panel">
                         <div class="row">
                             <div class="col-xs-4"><h2>Plus court chemin</h2></div>
-                            <div class="col-xs-8"><button id="kesako-djikstra" class="btn btn-sm btn-warning pull-right">
+                            <div class="col-xs-8"><button id="kesako-dijkstra" class="btn btn-sm btn-warning pull-right">
                                 <i class="fa fa-question"></i>
                                 <span class="btn-label"> Késako ?</span>
                             </button></div>
                         </div>
+                        <p>Outil bientôt disponible</p>
                     </div>
                 </div>
             </div>
@@ -206,6 +207,23 @@
             </div>
         </div>
 
+        <div class="modal fade" id="modalLoadGraph">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Charger un graphe</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Inscrivez dans la zone de texte ci-dessous la description JSON d'un graphe que vous avez précédemment créé sur cette application :</p>
+                        <textarea id="json-area-import" class="form-control" rows="10"></textarea>
+                        <br/>
+                        <button type="button" class="btn btn-sm btn-primary" id="loadGraph">Charger</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal fade" id="modalSaveGraph">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -217,7 +235,7 @@
                         <p>Voici une description du graphe en JSON. Copiez-collez dans un fichier texte</p>
                         <textarea id="json-area" class="form-control" rows="10"></textarea>
                         <br/>
-                        <button type="button" class="btn btn-primary">Ok merci !</button>
+                        <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Ok merci !</button>
                     </div>
                 </div>
             </div>
@@ -260,14 +278,34 @@
             </div>
         </div>
 
-        <div class="modal fade" id="modalKesakoDjikstra">
+        <div class="modal fade" id="modalKesakoDijkstra">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">Algorithme de Djikstra</h4>
+                        <h4 class="modal-title">Algorithme de Dijkstra</h4>
                     </div>
                     <div class="modal-body">
+                        <p>L'algorithme de Dijkstra permet de déterminer le plus court chemin pour se rendre d'un sommet d'un graphe (orienté ou non) à un autre sommet.</p>
+                        <p>Pour appliquer l'algorithme, il est nécessaire de fixer un poids, qui représente le coût d'emprunt d'un chemin, à tous les arcs/toutes les arêtes.</p>
+                        <p>Voici une petite idée de comment fonctionne l'algorithme :</p>
+                        <div class="bs-callout">
+                            Dans un graphe G, choisir un sommet de départ qu'on note s_deb<br/>
+                            P = [ ] // Liste des sommets visités par l'algorithme. Vide au départ<br/><br/>
+
+                            Pour chaque sommet du graphe : // on associe une valeur <br/>
+                            &nbsp; &nbsp; &nbsp; val(s_deb) = 0<br/>
+                            &nbsp; &nbsp; &nbsp; val(s) = +&infin; // s sommet différent de s_deb<br/>
+                            Fin pour<br/><br/>
+
+                            Tant qu'un sommet n'est pas dans la liste P :<br/>
+                            &nbsp; &nbsp; &nbsp; Choisir le sommet s1 n'appartenant pas à P de plus petite valeur<br/>
+                            &nbsp; &nbsp; &nbsp; Insérer s1 dans la liste P<br/>
+                            &nbsp; &nbsp; &nbsp; Pour chaque sommet s2 voisin de s1 n'appartenant pas à P :<br/>
+                            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; val(s2) = minimum( val(s2) ; val(s1) + poids(arete(s1,s2)) )<br/>
+                            &nbsp; &nbsp; &nbsp; Fin pour<br/>
+                            Fin tant que<br/>
+                        </div>
                     </div>
                 </div>
             </div>

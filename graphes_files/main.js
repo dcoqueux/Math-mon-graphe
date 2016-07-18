@@ -8,9 +8,8 @@ $(document).ready(function(){
     context    = canvas.getContext("2d")
     context.scale(1, 1)
     
-    // Elements
-    ui.properties = $("#info")
-    ui.elements   = $("#elements")
+    // Toolbox : Section applicative de la page en bas du canvas
+    uiToolbox = $("#info")
     
     // Example
     new Graph();
@@ -51,12 +50,15 @@ $(document).ready(function(){
     $( "#btnselect" ).click(function(){ clearUimode() })
     $( "#btnaddvertex" ).click(function(){ startAddVertex() })
     $( "#btnaddedge" ).click(function(){ startAddEdge() })
-    $( "#btnload"  ).click(function(){ loadGraphFromJSON() })
+
+    $( "#btnload"  ).click(function(){ $(" #modalLoadGraph ").modal('show') })
     $( "#btnsave"  ).click(function(){ saveGraphToJSON() })
     $( "#btnclear" ).click(function(){ clearCanvas() })
-    $( "#btninfo"  ).click(function(){ ui.properties.toggle() })
+
+    $( "#btninfo"  ).click(function(){ displayToolbox(TOOLBOX_INFO) })
     $( "#btnmatrice" ).click(function(){ matriceAdjacence() })
     $( "#btnmarche" ).click(function(){ marcheAleatoire() })
+    $( "#btndijkstra" ).click(function(){ algoDijkstra() })
     
     // Resize
     $(window).resize(updateState)
