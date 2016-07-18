@@ -9,7 +9,10 @@ htmlMessages = {
     nvlArete : '<button id="cancelEdge" class="btn btn-sm btn-danger infoboxbtn">Annuler</button><h2>Nouvelle arête / Nouvel arc</h2>' +
         '<p>Cliquez sur deux noeuds à lier par une nouvelle arête / nouvel arc.</p>' +
         '<p>Raccourci clavier pour la création : Maintenir les touches "Alt" et "Shift" enfoncées et sélectionner 2 noeuds.</p>',
-    multiselection : '<button class="btn btn-sm btn-danger infoboxbtn">Supprimer sélection</button><h2>Multiselection</h2>',
+    multiselection : '<div class="row">' +
+            '<div class="col-xs-4"><h2>Multiselection</h2></div>' +
+            '<div class="col-xs-8"><button class="btn btn-sm btn-danger removebtn pull-right">Supprimer sélection</button></div>' +
+        '</div>',
     listeNoeudsHead : '<li class="h">Noeuds</li>',
     listeAretesHead : '<li class="h">Arêtes</li>',
     erreurMatrice : 'Erreur dans la génération de la matrice. Vérifiez que tous les arcs sont correctement pondérés'
@@ -30,11 +33,11 @@ var formatInfoboxVertex = function(noeud) {
             '<div class="col-xs-8"><button class="btn btn-sm btn-danger removebtn pull-right">Supprimer noeud</button></div>' +
         '</div>' +
         '<div class="row">' +
-            '<div class="input-group col-xs-6">' +
+            '<div class="input-group input-group-sm col-xs-6">' +
                 '<span class="input-group-addon">Nom : </span>' +
                 '<input type="text" class="form-control" id="label" value="' + he(noeud.value) + '">' +
             '</div>' +
-            '<div class="input-group col-xs-6"">' +
+            '<div class="input-group input-group-sm col-xs-6"">' +
                 '<span class="input-group-addon">Degré : </span>' +
                 '<input type="text" class="form-control" value="' + he(noeud.getDegree()) + '" readonly>' +
             '</div>' +
@@ -52,7 +55,7 @@ var formatInfoboxEdge = function(arete) {
             '</div></div>' +
         '</div>' +
         '<div class="row">' +
-            '<div class="input-group col-xs-12">' +
+            '<div class="input-group input-group-sm col-xs-12">' +
                 '<span class="input-group-addon">Poids : </span>' +
                 '<input type="text" id="label" value="' + he(arete.value) + '" class="form-control">' +
             '</div>' +
@@ -164,7 +167,7 @@ formatEtatProbabiliste = function() {
     tab += '<thead class="thead-inverse"><tr><th>Etat probabiliste</th></tr></thead><tbody>'
 
     for (var i = 0; i < graph.vertices.length; i++) {
-        tab += '<tr><td><input id="vect-' + i + '" class="form-control"></td></tr>'
+        tab += '<tr><td><input id="vect-' + i + '" class="form-control form-control-sm"></td></tr>'
     }
 
     tab += '</tbody></table>'

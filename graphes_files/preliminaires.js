@@ -75,6 +75,7 @@ var labelStyle    = new ElementStyle("transparent", "#fff", 0)
 
 $(document).ready(function() {
 
+    // Affiche les 'tooltips', indications lorsque le curseur survole les boutons
     $('[data-toggle="tooltip"]').tooltip();
 
     // Clic sur le bouton de validation du nom du noeud dans le modal création
@@ -100,10 +101,21 @@ $(document).ready(function() {
         $(" #json-area-import ").val('');
     });
 
-    // Touche entrée --> validation du nom du noeud
-    $(" #vertexName ").on("keypress", function(args) {
-        if (args.keyCode == 13 && $(" #modalCreationVertex ").hasClass('in')) {
-            $(" #createVertex ").click();
+    // Touche entrée --> validation du formulaire de la fenêtre modale
+    $(document).on("keypress", function(args) {
+        if (args.keyCode == 13) {
+            if ($(" #modalCreationVertex ").hasClass('in')) {
+                $(" #createVertex ").click();
+            } else if ($(" #modalSuppression ").hasClass('in')) {
+                $(" #confirmSuppr ").click();
+            }
+        }
+    });
+
+    // Fermer une fenêtre modale à l'appui de la touche "Echap"
+    $(document).on("keyup", function(args) {
+        if (args.keyCode == 27 && $(" .modal ").hasClass('in')) {
+            $(" .in ").modal('hide');
         }
     });
 
@@ -111,6 +123,17 @@ $(document).ready(function() {
     $(document).on("click", "#btn-oriente", function() {
         graph.directed = !graph.directed;
         updateState();
+    });
+
+    // Demande de suppression d'un élément du graphe
+    $(document).on("click", ".removebtn", function() {
+        $(" #modalSuppression ").modal('show');
+    });
+
+    // Confirme la suppression d'un élément du graphe
+    $(" #confirmSuppr ").on("click", function() {
+        removeSelection();
+        $(" #modalSuppression ").modal('hide');
     });
 
     // Modales d'aide
@@ -168,6 +191,7 @@ function is_numeric(mixed_var) {
     return (typeof(mixed_var) == nb || typeof(mixed_var) == str) && mixed_var !== '' && !isNaN(mixed_var); 
 }
 
+// Supprime les undefined d'un tableau
 function trimArray(array) { 
     var a = []; 
     for (var e = 0; e < array.length; e++) { 

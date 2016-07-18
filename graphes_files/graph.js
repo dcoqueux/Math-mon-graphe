@@ -1,6 +1,6 @@
-// GRAPH JS =============================================================================
+// GRAPH JS ======================================================================================================
 
-// Récupération de données sur le canvas ------------------------------------------------
+// Récupération de données sur le canvas -------------------------------------------------------------------------
 
 /*
  *  Retrouve un élément du graphe à partir des coordonnées en argument
@@ -75,7 +75,7 @@ function evtPosition(evt, canvas) {
 }
 
 
-// Canvas triggers ----------------------------------------------------------------------
+// Canvas triggers -----------------------------------------------------------------------------------------------
 
 /* 
  *  Modifie le canvas en temps réel à l'action "drag & drop" de l'utilisateur
@@ -84,26 +84,25 @@ function canvasMove(evt){
     var [x,y] = evtPosition(evt, canvas_elt)
     var el
     
-    if(dragging && uimode == GJ_TOOL_SELECT){
+    if (dragging && uimode == GJ_TOOL_SELECT) {
         dlog("Drag")
-        // Set dragging position
+
+        // Drag d'un nouvel élément ? --> hovered
         if(tmp_edge[0] == null){
             tmp_edge = [x,y]
-            // Simulated hovering on touch devices
             hovered = getElement(x,y)
         }
 
-        // We're trying to drag an element
-        if(hovered != null){
-            // Set selection
-            if(!inArray(hovered, selected)){
+        if (hovered != null) {
+            if (!inArray(hovered, selected))
                 setSelected(hovered, evt)
-                tmp_edge = [x,y]
-            }
-            // Drag each selected element
-            for (var n in selected) {
-                el = selected[n]
-                if(el instanceof Vertex){
+
+            // Modifier la position de tous les sommets sélectionnés
+            // selon le déplacement du sommet "draggué"
+            for (var i = 0; i < selected.length; i++) {
+                el = selected[i]
+
+                if (el instanceof Vertex) {
                     // Set original vertex position
                     if(tmp_edge[0] == x && tmp_edge[1] == y){
                         el.ox = el.x
@@ -115,29 +114,33 @@ function canvasMove(evt){
                     el.y = Math.max(5, el.oy + (y - tmp_edge[1]))
                 }
             }
+
             updateState()
-        } else {
-            // We're dragging a rectangle of selection
-            var selection  = graph.elementsWithinRect(tmp_edge[0], tmp_edge[1], x, y)
-            //selected       = evt.shiftKey ? selected.concat(selection) : selection
-            if(!evt.shiftKey){ selected = [] }
-            for (var i in selection) {
+        }
+        else {
+            var selection = graph.elementsWithinRect(tmp_edge[0], tmp_edge[1], x, y)
+
+            if (!evt.shiftKey)
+                selected = []
+
+            for (var i in selection)
                 selected[selection[i].id] = selection[i]
-            }
+
             drawAll()
             context.strokeStyle = "rgba(153,153,153,0.5)"
-            context.lineWidth   = 1
+            context.lineWidth = 1
             context.strokeRect(tmp_edge[0], tmp_edge[1], x-tmp_edge[0], y-tmp_edge[1])
         }
 
-        if(!touch){
-            dontclick = true // Prevent click event on mouseup
-        }
-    } else {
-        //hovered = getElement(x,y)
+        // Pour empecher l'evenement clic
+        if (!touch)
+            dontclick = true
+    }
+    else {
         if (uimode == GJ_TOOL_ADD_EDGE) {
             hovered = getElement(x,y)
-            if(touch && hovered instanceof Vertex){
+
+            if (touch && hovered instanceof Vertex) {
                 tmp_edge[(tmp_edge[0] == null) ? 0 : 1] = hovered
                 selected = [hovered]
                 finishAddEdge(context)
@@ -184,7 +187,8 @@ function canvasClick(evt){
         }
     }
 
-    if(dontclick){ dontclick = false }
+    if (dontclick)
+        dontclick = false
 }
 
 
@@ -219,7 +223,7 @@ function canvasKey(evt){
     }
 }
 
-// Méthodes d'actions sur l'application -------------------------------------------------
+// Méthodes d'actions sur l'application --------------------------------------------------------------------------
 
 /*
  *  Trigger enclenché au clic du bouton "Ajout d'une arête"
@@ -287,7 +291,7 @@ function finishAddVertex(x, y, cx){
 }
 
 
-// Dessin sur le canvas -----------------------------------------------------------------
+// Dessin sur le canvas ------------------------------------------------------------------------------------------
 
 /*
  *  Dessine l'intégralité d'un graphe
@@ -320,7 +324,7 @@ function drawAll() {
 }
 
 
-// Evenements touch triggers ------------------------------------------------------------
+// Evenements touch triggers -------------------------------------------------------------------------------------
 // Redirige vers les méthodes canvasXXX comme dans un environnement non-tactile
 
 /*
@@ -367,7 +371,7 @@ function touchStart(evt){
 }
 
 
-// UI modes -----------------------------------------------------------------------------
+// UI modes ------------------------------------------------------------------------------------------------------
 
 /*
  *  Modifie le type d'action en cours de l'utilisateur
@@ -394,7 +398,23 @@ function clearUimode(){
 }
 
 
-// Fonctionnalités ----------------------------------------------------------------------
+function displayToolbox(toolname) {
+    uiToolbox.hide();
+
+    if (toolname == TOOLBOX_INFO)
+        uiToolbox = $(" #info ");
+    else if (toolname == TOOLBOX_MATRICE_ADJACENCE)
+        uiToolbox = $(" #matrice ");
+    else if (toolname == TOOLBOX_MARCHE_ALEATOIRE)
+        uiToolbox = $(" #marche-aleatoire ");
+    else if (toolname == TOOLBOX_ALGORITHME_DIJKSTRA)
+        uiToolbox = $(" #dijkstra ");
+
+    uiToolbox.show();
+}
+
+
+// Fonctionnalités -----------------------------------------------------------------------------------------------
 
 /*
  *  Met à jour la liste des éléments du graphe sélectionnés par l'utilisateur
@@ -462,19 +482,27 @@ function computeCurveParameters(nbAretes, numArete, arete) {
 
 
 /*
- *  Demande la confirmation de suppression d'un noeud / d'une arête,
- *  et supprime l'élément auquel cas.
+ *  Supprime les éléments selectionnés, les arêtes d'abord, puis les sommets
  */
-function removeElement(el, graph){
-    var type_elt = el instanceof Vertex ? "du noeud" : "de l'arête";
-    dlog("Suppression " + type_elt);
+function removeSelection() {
+    var deletingElts = trimArray(selected);
 
-    var rep = confirm("Vous confirmez la suppression " + type_elt + "?")
-    if (rep) {
-        el.detach();
-        updateState()
+    for (var i = 0; i < deletingElts.length; i++) {
+        if (deletingElts[i] instanceof Edge) {
+            dlog("Suppression arête");
+            deletingElts[i].detach();
+        }
     }
-    return rep
+
+    for (var i = 0; i < deletingElts.length; i++) {
+        if (deletingElts[i] instanceof Vertex) {
+            dlog("Suppression noeud");
+            deletingElts[i].detach();
+        }
+    }
+
+    updateState()
+    return true;
 }
 
 
@@ -541,6 +569,11 @@ function updateState(info){
     displayElements()
 }
 
+function updateToolbox() {
+    // TODO : mettre ici les appels à matriceAdjacence et marcheAleatoire
+    // et placer un appel à la fonction là où il y a modification du graphe (comme updateState)
+}  
+
 
 /*
  *  Génère le contenu de l'infobox en bas de l'écran
@@ -569,7 +602,6 @@ function fillInfobox(elt) {
         }
         $("input#label", info).keyup (function(){ elt.value = this.value; drawAll() })
         $("input#label", info).change(function(){ elt.value = this.value; updateState() })
-        $(".removebtn", info).click(function(){ removeElement(elt, graph) })
 
     // ===== Infobox Graphe =====
     } else {
@@ -618,22 +650,6 @@ function displayElements(){
         updateState()
     })
     $("ul.elements", "#elements").empty().append(list)
-}
-
-
-function displayToolbox(toolname) {
-    uiToolbox.hide();
-
-    if (toolname == TOOLBOX_INFO)
-        uiToolbox = $(" #info ");
-    else if (toolname == TOOLBOX_MATRICE_ADJACENCE)
-        uiToolbox = $(" #matrice ");
-    else if (toolname == TOOLBOX_MARCHE_ALEATOIRE)
-        uiToolbox = $(" #marche-aleatoire ");
-    else if (toolname == TOOLBOX_ALGORITHME_DIJKSTRA)
-        uiToolbox = $(" #dijkstra ");
-
-    uiToolbox.show();
 }
 
 

@@ -123,7 +123,7 @@
                                 <span class="btn-label"> Késako ?</span>
                             </button></div>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group input-group-sm">
                             <span class="input-group-addon">Longueur des chemins : </span>
                             <input type="text" id="path-length" value="1" class="form-control">
                         </div>
@@ -141,7 +141,7 @@
                             </button></div>
                         </div>
                         <div class="row">
-                            <div class="input-group col-xs-6">
+                            <div class="input-group input-group-sm col-xs-6">
                                 <span class="input-group-addon">Aller à l'étape #</span>
                                 <input type="text" id="step" class="form-control">
                                 <div class="input-group-btn dropup">
@@ -155,13 +155,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="input-group col-xs-6">
+                            <div class="input-group input-group-sm col-xs-6">
                                 <span class="input-group-addon">Etape #</span>
                                 <input type="text" id="step" class="form-control" value="0" readonly>
                                 <span class="input-group-btn"><button class="btn btn-success">Recommencer</button></span>
                             </div>
                         </div>
-                        <br/>
                         <div class="row">
                             <div id="tab-marche" class="col-xs-9"></div>
                             <div id="tab-etat" class="col-xs-3"></div>
@@ -184,6 +183,19 @@
         </div>
 
         <!-- Fenêtres modales -->
+
+        <div class="modal fade" id="modalSuppression">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <p>Voulez-vous supprimer le(s) élément(s) sélectionné(s) sur le canvas ?</p>
+                        <p>Entrée pour confirmer, Echap pour annuler</p>
+                        <button type="button" class="btn btn-sm btn-primary" id="confirmSuppr">Confirmer</button>
+                        <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Annuler</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="modal fade" id="modalCreationVertex">
             <div class="modal-dialog">
