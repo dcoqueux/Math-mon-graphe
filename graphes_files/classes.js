@@ -119,6 +119,13 @@ function Graph(){
         return null
     }
 
+    this.getEdge = function(from, to) {
+        for (var i = 0; i < this.edges.length; i++) {
+            if (this.edges[i].from === from && this.edges[i].to === to)
+                return this.edges[i]
+        }
+    }
+
     // ===== Adjacence, matrices ... Utilise la bibliothèque sylvester =====
     
     /*
@@ -409,7 +416,8 @@ function Vertex(id, value, x, y){
         // Affichage du nom et du poids du noeud
         styleContext(labelStyle, false)
         context.fillText(this.value, this.x, this.y)
-        context.fillText(this.weigh, this.x - (RAYON_NOEUD + 10), this.y - (RAYON_NOEUD + 10))
+        if (this.weigh != 0)
+            context.fillText(this.weigh, this.x - (RAYON_NOEUD + 5), this.y - (RAYON_NOEUD + 8))
     }
 
     this.getDegree = function() {
@@ -470,7 +478,7 @@ function Vertex(id, value, x, y){
 function Edge(id, value, from, to){
     // Initialisation
     if(typeof id != nb){ return false }
-    if(typeof value != nb && typeof value != str){ value = "" }
+    if(typeof value != nb){ value = isNaN(value) ? 0 : parseFloat(value); }
     if(typeof from != obj || typeof to != obj){ return false }
     
     this.id       = id           // Géré par Graph
@@ -556,7 +564,8 @@ function Edge(id, value, from, to){
 
         // Affichage du nom et du poids du noeud
         styleContext(labelStyle, false)
-        context.fillText(this.value, params['alphax'], params['alphay'])
+        if (this.weigh != 0)
+            context.fillText(this.value, params['alphax'], params['alphay'])
     }
     
     // Supprime l'arête et fusionne les noeuds adjacents liés par l'arête

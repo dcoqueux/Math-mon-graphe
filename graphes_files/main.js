@@ -19,11 +19,11 @@ $(document).ready(function(){
     n3 = graph.addVertex([300, 300], "3")
     n4 = graph.addVertex([450, 175], "4")
     // [[1, 2], [2, 4], [1, 3], [3, 4], [2, 3]]
-    graph.addEdge([n1, n2], 0.25)
-    graph.addEdge([n2, n4], 0.5)
-    graph.addEdge([n1, n3], 0.4)
-    graph.addEdge([n3, n4], 0.61)
-    graph.addEdge([n2, n3], 0.12)
+    graph.addEdge([n1, n2], 25)
+    graph.addEdge([n2, n4], 50)
+    graph.addEdge([n1, n3], 40)
+    graph.addEdge([n3, n4], 61)
+    graph.addEdge([n2, n3], 12)
     
     // ===== Ecoute d'evenements clic à la souris =====
 
@@ -56,15 +56,16 @@ $(document).ready(function(){
     $( "#btnclear" ).click(function(){ clearCanvas() })
 
     $( "#btninfo"  ).click(function(){ displayToolbox(TOOLBOX_INFO) })
-    $( "#btnmatrice" ).click(function(){ matriceAdjacence() })
-    $( "#btnmarche" ).click(function(){ marcheAleatoire() })
-    $( "#btndijkstra" ).click(function(){ algoDijkstra() })
+    $( "#btnmatrice" ).click(function(){ displayToolbox(TOOLBOX_MATRICE_ADJACENCE) })
+    $( "#btnmarche" ).click(function(){ displayToolbox(TOOLBOX_MARCHE_ALEATOIRE) })
+    $( "#btndijkstra" ).click(function(){ displayToolbox(TOOLBOX_ALGORITHME_DIJKSTRA) })
     
     // Resize
     $(window).resize(updateState)
     
     // Let's go!
     updateState()
+    updateToolbox()
 })
 
 // JSON runtime, if you do not already have it

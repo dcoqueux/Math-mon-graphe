@@ -85,11 +85,9 @@ $(document).ready(function() {
 
         if( $("#vertexautocomplete").is(":checked") ) { 
             graph.semiComplete(v) // Ne fonctionne pas. TODO : A corriger
-            updateState(false)
-        } else {
-            clearUimode()
         }
 
+        clearUimode()
         $(" #vertexName ").val('')
         $( "#modalCreationVertex" ).modal('hide');
     });
@@ -134,6 +132,19 @@ $(document).ready(function() {
     $(" #confirmSuppr ").on("click", function() {
         removeSelection();
         $(" #modalSuppression ").modal('hide');
+    });
+
+    $(" #path-length ").on("change", matriceAdjacence);
+
+    $(" #launchDijkstra ").on("click", function() {
+        selection = trimArray(selected)
+
+        if (graph.allEdgesWeighted() && selection.length == 1 && selection[0] instanceof Vertex) {
+            algoDijkstra(selection[0]);
+        }
+        else {
+            $(".alert").show();
+        }
     });
 
     // Modales d'aide

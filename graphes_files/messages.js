@@ -35,7 +35,7 @@ var formatInfoboxVertex = function(noeud) {
         '<div class="row">' +
             '<div class="input-group input-group-sm col-xs-6">' +
                 '<span class="input-group-addon">Nom : </span>' +
-                '<input type="text" class="form-control" id="label" value="' + he(noeud.value) + '">' +
+                '<input type="text" class="form-control" id="labelVertex" value="' + he(noeud.value) + '">' +
             '</div>' +
             '<div class="input-group input-group-sm col-xs-6"">' +
                 '<span class="input-group-addon">Degré : </span>' +
@@ -57,7 +57,7 @@ var formatInfoboxEdge = function(arete) {
         '<div class="row">' +
             '<div class="input-group input-group-sm col-xs-12">' +
                 '<span class="input-group-addon">Poids : </span>' +
-                '<input type="text" id="label" value="' + he(arete.value) + '" class="form-control">' +
+                '<input type="text" id="labelEdge" value="' + he(arete.value) + '" class="form-control">' +
             '</div>' +
         '</div>' +
     '</div>'
@@ -123,53 +123,79 @@ var formatEdgesList = function() {
 }
 
 var formatMatrix = function(matrice, direct) {
-    var tab = '<table class="table table-bordered table-sm"><thead class="thead-inverse">'
+    var table = '<table class="table table-bordered table-sm"><thead class="thead-inverse">'
     if (direct) {
         // Matrice d'adjacence : ligne -> de, colonne -> vers
-        tab += '<tr><th width="10%">De</th><th width="5%">Vers</th>'
+        table += '<tr><th width="10%">De</th><th width="5%">Vers</th>'
     } else {
         // Matrice de transition : colonne -> de, ligne -> vers
-        tab += '<tr><th width="10%">Vers</th><th width="5%">De</th>'
+        table += '<tr><th width="10%">Vers</th><th width="5%">De</th>'
     }
     
     for (var i = 0; i < graph.vertices.length; i++) {
-        tab += '<th>' + graph.vertices[i].value + '</th>'
+        table += '<th>' + graph.vertices[i].value + '</th>'
     }
 
-    tab += '<th width="5%"></th></tr></thead><tbody>'
+    table += '<th width="5%"></th></tr></thead><tbody>'
 
     for (var i = 0; i < graph.vertices.length; i++) {
-        tab += '<tr><th class="table-inverse">' + graph.vertices[i].value + '</th>'
+        table += '<tr><th class="table-inverse">' + graph.vertices[i].value + '</th>'
 
         if (i == 0) {
-            tab += '<td rowspan="' + graph.vertices.length + '">' +
+            table += '<td rowspan="' + graph.vertices.length + '">' +
                 '<img src="./graphes_files/parenthese-ouvrante.svg" height="' + graph.vertices.length * 30 + '"></td>'
         }
 
         for (var j = 0; j < graph.vertices.length; j++) {
-            tab += '<td>' + matrice[i][j] + '</td>'
+            table += '<td>' + matrice[i][j] + '</td>'
         }
 
         if (i == 0) {
-            tab += '<td rowspan="' + graph.vertices.length + '">' +
+            table += '<td rowspan="' + graph.vertices.length + '">' +
                 '<img src="./graphes_files/parenthese-fermante.svg" height="' + graph.vertices.length * 30 + '"></td>'
         }
 
-        tab += '</tr>'
+        table += '</tr>'
     }
 
-    tab += '</tbody></table>'
-    return tab;
+    table += '</tbody></table>'
+    return table;
 }
 
 formatEtatProbabiliste = function() {
-    var tab = '<table class="table table-bordered table-sm">'
-    tab += '<thead class="thead-inverse"><tr><th>Etat probabiliste</th></tr></thead><tbody>'
+    var table = '<table class="table table-bordered table-sm">'
+    table += '<thead class="thead-inverse"><tr><th>Etat probabiliste</th></tr></thead><tbody>'
 
     for (var i = 0; i < graph.vertices.length; i++) {
-        tab += '<tr><td><input id="vect-' + i + '" class="form-control form-control-sm"></td></tr>'
+        table += '<tr><td><input id="vect-' + i + '" class="form-control form-control-sm"></td></tr>'
     }
 
-    tab += '</tbody></table>'
-    return tab;
+    table += '</tbody></table>'
+    return table;
+}
+
+formatDijkstraTab = function(array) {
+    var table = '<table class="table table-bordered table-sm"><thead class="thead-inverse"><tr><th width="10%"></th>'
+
+    for (var i = 1; i <= graph.vertices.length; i++)
+        table += '<th>' + array[0][i] + '</th>'
+
+    table += '</tr><tr><td class="table-inverse">Noeud élu</td>'
+
+    for (var i = 1; i <= graph.vertices.length; i++)
+        table += '<td>' + array[1][i] + '</td>'
+
+    table += '</tr>'
+
+    for (var i = 2; i < array.length; i++) {
+        table += '<tr><td class="table-inverse">' + array[i][0] + '</td>'
+        for (var j = 1; j <= graph.vertices.length; j++) {
+            var val = (array[i][j] == array[i-1][j]) ? '" "' : array[i][j]
+            table += '<td>' + val + '</td>'
+        }
+        table += '</tr>'
+    }
+
+    table += '</table>'
+    return table;
 }

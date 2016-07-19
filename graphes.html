@@ -176,10 +176,24 @@
                                 <span class="btn-label"> Késako ?</span>
                             </button></div>
                         </div>
-                        <p>Outil bientôt disponible</p>
+                        <div class="row">
+                            <div class="col-xs-8">
+                                <p>Sélectionnez sur le canvas ou dans la liste à droite un noeud de départ, et lancez l'algorithme en appuyant sur le bouton ci-contre.</p>
+                            </div>
+                            <div class="col-xs-4">
+                                <button id="launchDijkstra" class="btn btn-sm btn-primary">Lancer l'algorithme</button>
+                            </div>
+                        </div>
+                        <div id="tab-dijkstra"></div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Alertes -->
+
+        <div class="alert alert-warning" role="alert">
+            <strong>Attention :</strong> Impossible de lancer l'algorithme de Djikstra, vérifiez que vos arêtes sont toutes valuées, et que vous avez sélectionné un noeud de départ et d'arrivée.
         </div>
 
         <!-- Fenêtres modales -->

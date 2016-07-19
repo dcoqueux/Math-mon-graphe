@@ -39,7 +39,7 @@ canvas {
 	display: inline;
 }
 
-.fa {
+.fa, .alert, #matrice, #marche-aleatoire, #dijkstra {
 	display: none;
 }
 
@@ -59,10 +59,6 @@ h1 {
 
 #info p {
 	margin-bottom: 5px;
-}
-
-#matrice, #marche-aleatoire, #dijkstra {
-	display: none;
 }
 
 .modal-body {

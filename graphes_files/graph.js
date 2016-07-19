@@ -143,7 +143,7 @@ function canvasMove(evt){
             if (touch && hovered instanceof Vertex) {
                 tmp_edge[(tmp_edge[0] == null) ? 0 : 1] = hovered
                 selected = [hovered]
-                finishAddEdge(context)
+                finishAddEdge()
             }
         } else {
             tmp_edge = [null,null]
@@ -179,11 +179,11 @@ function canvasClick(evt){
             selected[elmt.id] = elmt
 
             updateState(false)
-            finishAddEdge(context)
+            finishAddEdge()
         }
         if((uimode == GJ_TOOL_ADD_VERTEX || (uimode == GJ_TOOL_SELECT && shortcutNotShift)) && elmt == null){
             dlog(["Clic", "Nouveau noeud"])
-            finishAddVertex(clicPos[0], clicPos[1], context)
+            finishAddVertex(clicPos[0], clicPos[1])
         }
     }
 
@@ -269,7 +269,7 @@ function startAddVertex(){
 /*
  *  Méthode appelée par canvasClick après avoir sélectionné le noeud d'arrivée
  */
-function finishAddEdge(cx){
+function finishAddEdge(){
     if(uimode == GJ_TOOL_ADD_EDGE && tmp_edge[0] instanceof Vertex && tmp_edge[1] instanceof Vertex){
         graph.addEdge(tmp_edge)
         dlog(["Arête créée"])
@@ -281,7 +281,7 @@ function finishAddEdge(cx){
 /*
  *  Méthode appelée par canvasClick après avoir cliqué quelque part sur le canvas
  */
-function finishAddVertex(x, y, cx){
+function finishAddVertex(x, y){
     if(x >= 0 && y >= 0){
         $(" #vertexX ").val(x);
         $(" #vertexY ").val(y);
@@ -395,6 +395,7 @@ function clearUimode(){
     tmp_edge = [null, null];
     selected = [];
     updateState();
+    updateToolbox();
 }
 
 
@@ -530,7 +531,7 @@ function loadGraphFromJSON(json) {
                 edge = obj.edges[i]
                 from = graph.getVertexByName(edge.from)
                 to = graph.getVertexByName(edge.to)
-                graph.addEdge([from, to])
+                graph.addEdge([from, to], edge.value)
             }
         } catch(e) {
             dlog(e);
@@ -570,7 +571,8 @@ function updateState(info){
 }
 
 function updateToolbox() {
-    // TODO : mettre ici les appels à matriceAdjacence et marcheAleatoire
+    matriceAdjacence();
+    marcheAleatoire();
     // et placer un appel à la fonction là où il y a modification du graphe (comme updateState)
 }  
 
@@ -594,14 +596,17 @@ function fillInfobox(elt) {
         // ===== Infobox Noeud =====
         if(elt instanceof Vertex){
             var info = $(formatInfoboxVertex(elt))
+            // TODO : Changer value en name
+            $("input #labelVertex", info).keyup (function(){ elt.value = this.value; drawAll(); })
+            $("input #labelVertex", info).change(function(){ updateState(); updateToolbox(); })
         }
         // ===== Infobox Arête =====
         else if(elt instanceof Edge){
             var info = $(formatInfoboxEdge(elt))
             $(".contractbtn", info).click(function(){ elt.contract(); updateState() })
+            $("input #labelEdge", info).keyup (function(){ elt.value = parseFloat(this.value); drawAll(); })
+            $("input #labelEdge", info).change(function(){ updateState(); updateToolbox(); })
         }
-        $("input#label", info).keyup (function(){ elt.value = this.value; drawAll() })
-        $("input#label", info).change(function(){ elt.value = this.value; updateState() })
 
     // ===== Infobox Graphe =====
     } else {
@@ -656,20 +661,12 @@ function displayElements(){
 // Méthodes des toolbox ------------------------------------------------------------------------------------------
 
 function matriceAdjacence() {
-    displayToolbox(TOOLBOX_MATRICE_ADJACENCE);
-    
-    $(" #matrice ").show();
     matrice = graph.adjacencyMatrix( false, parseInt($(" #path-length ").val()) );
     $(" #tab-matrice ").html(formatMatrix(matrice, true));
-
-    // TODO : a replacer de meilleur façon
-    $(" #path-length ").on("change", matriceAdjacence);
 }
 
 
 function marcheAleatoire() {
-    displayToolbox(TOOLBOX_MARCHE_ALEATOIRE);
-
     if (!graph.directed) {
         graph.directed = true;
         updateState();
@@ -683,8 +680,6 @@ function marcheAleatoire() {
         $(" #tab-marche ").html(formatMatrix(matriceTransition, false));
         $(" #tab-etat ").html(formatEtatProbabiliste());
     }
-    
-    $(" #marche-aleatoire ").show();
 }
 
 
@@ -693,35 +688,58 @@ function marcheAleatoire() {
  *  Fonctionne aussi bien pour des graphes orientés ou non orientés
  */
 function algoDijkstra(noeudDep) {
-    displayToolbox(TOOLBOX_ALGORITHME_DIJKSTRA)
-
-    var visited = []
-    var selected = noeudDep;
+    var visited = [];
+    var selected;
+    // variable qui stocke le meilleur poids des noeuds non visités
+    var bestWeigh = Infinity;
+    // tableau de données pour la toolbox de l'interface utilisateur
+    var tab = [ [], [] ];
 
     // Initialisation des valuations des noeuds pour l'algorithme
-    /*for (var i = 0; i < graph.vertices; i++) {
-        if (graph.vertices[i] === noeudDep)
-            graph.vertices[i].weigh = 0
-        else
-            graph.vertices[i].weigh = Infinity
+    for (var i = 0; i < graph.vertices.length; i++) {
+        graph.vertices[i].weigh = (graph.vertices[i] == noeudDep) ? 0 : Infinity
+        tab[0][i+1] = graph.vertices[i].value;
+        tab[1][i+1] = graph.vertices[i].weigh;
     }
 
     // Tant que l'on ne s'est pas interessé à tous les noeuds
     while (visited.length != graph.vertices.length) {
-        // Choisir un sommet s1 hors de P de plus petite valeur
-        for (var i = 0; i < graph.vertices; i++) {
-            if ( !(graph.vertices[i] in P) && graph.vertices[i].weigh <= selected )
+        // Choisir un sommet s1 hors de visited de plus petite valeur
+        for (var i = 0; i < graph.vertices.length; i++) {
+            if ( !(visited.includes(graph.vertices[i])) && graph.vertices[i].weigh < bestWeigh ) {
                 selected = graph.vertices[i];
+                bestWeigh = graph.vertices[i].weigh;
+            }
         }
 
-        // Mettre ce sommet dans P
-        P.push(selected)
+        // Mettre ce sommet dans visited
+        visited.push(selected)
 
-        // Pour chaque sommet s2 voisin de s1 n appartenant pas à P :
-        successeurs = (graph.directed) ? selected.successeurs() : selected.neighbours();
-        for (var i = 0; i < successeurs.length; i++) {
-            if ( !(successeurs[i] in P) )
-                successeurs[i].weigh = Math.min(successeurs[i].weigh, selected.weigh) //+ edge.value)
+        // Pour chaque sommet s2 voisin de s1 n appartenant pas à visited, on calcule un nouveau poids
+        for (var i = 0; i < selected.edges.length; i++) {
+            var poidsArete = selected.edges[i].obj.value;
+            var voisin = selected.edges[i].linkedTo;
+
+            // voisin = sommet adjacent dans un graphe non orienté,
+            // ou sommet à la fin d'un arc partant du sommet selected dans un graphe orienté
+            if (!graph.directed || selected.edges[i].isOrigin) {
+                if ( !visited.includes(voisin) ) {
+                    // dlog([voisin.value, poidsArete]);
+                    voisin.weigh = Math.min(voisin.weigh, selected.weigh + poidsArete)
+                }
+            }
         }
-    }*/
+
+        var line = []
+        line.push(selected.value)
+        for (var i = 0; i < graph.vertices.length; i++)
+            line.push(graph.vertices[i].weigh)
+
+        tab.push(line);
+        bestWeigh = Infinity;
+    }
+
+    var html = formatDijkstraTab(tab)
+    $(" #tab-dijkstra ").html(html)
+    drawAll()
 }
