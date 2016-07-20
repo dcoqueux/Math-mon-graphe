@@ -394,8 +394,14 @@ function setUimode(mode){
  */
 function clearUimode(){
     setUimode(GJ_TOOL_SELECT);
+
+    // Nettoyage de variables
     tmp_edge = [null, null];
     selected = [];
+    for (var i=0; i < graph.vertices.length; i++)
+        graph.vertices[i].weigh = 0
+
+    // Mise à jour de l'UI
     updateState();
     updateToolbox();
 }
@@ -413,6 +419,7 @@ function displayToolbox(toolname) {
     else if (toolname == TOOLBOX_ALGORITHME_DIJKSTRA)
         uiToolbox = $(" #dijkstra ");
 
+    clearUimode();
     uiToolbox.show();
 }
 
@@ -690,44 +697,40 @@ function computeMarcheAleatoire() {
 function simuleMarche(mode) {
     var matriceTransition = graph.transitionMatrix(true);
     var etatProbabiliste = [];
-    var etatSuivant;
+    var coefficient;
     var sommeCoordonnees = 0;
     var etapeDebut = parseInt( $(" #currentStep ").val() );
     var etapeFin = parseInt( $(" #goalStep ").val() );
 
     for (var i = 0; i < graph.vertices.length; i++) {
-        var coefficient = eval( $("#vect-" + i).val() )
+        coefficient = eval( $("#vect-" + i).val() )
         etatProbabiliste.push(coefficient);
         sommeCoordonnees += coefficient;
     }
 
-    if (sommeCoordonnees == 1) {
-        etatProbabiliste = $V(etatProbabiliste);
+    if ( sommeCoordonnees == 1 && !isNaN(etapeDebut) && !isNaN(etapeFin) && etapeDebut < etapeFin ) {
+        // Calcul de la transition
+        etatProbabiliste = matriceTransition.x($V(etatProbabiliste));
 
-        for (var k = etapeDebut; k < etapeFin; k++) {
-            // Calcul de la transition
-            etatSuivant = matriceTransition.x(etatProbabiliste);
-
-            // Mise à jour des fréquences sur les sommets
-            //dlog(etatSuivant.elements);
-            for (i = 0; i < graph.vertices.length; i++)
-                graph.vertices[i].weigh = etatSuivant.e(i+1).toFixed(5)
-
-            // Mise à jour de l'étape courante
-            etatProbabiliste = etatSuivant;
-
-            // Mode pas à pas
-            if (mode == "marche-2") {
-                setTimeout(function() { $(" #currentStep ").val(k+1); drawAll(); }, 0);
-                sleep(1000)
-            }
+        // Mise à jour des fréquences sur les sommets
+        // dlog(etatProbabiliste.elements);
+        for (i = 0; i < graph.vertices.length; i++) {
+            coefficient = etatProbabiliste.e(i+1);
+            graph.vertices[i].weigh = coefficient.toFixed(5)
+            $("#vect-" + i).val(coefficient)
         }
 
-        $(" #currentStep ").val(etapeFin);
+        $(" #currentStep ").val(etapeDebut + 1);
         drawAll();
+
+        // Appel récursif de la fonction (plutot qu'une boucle sur le numéro d'étape)
+        // pour faire apparaitre les fréquences intermédiaires des sommets sur le canvas 
+        // si le mode est "pas à pas" (cf. drawAll() juste au-dessus)
+        if (etapeDebut + 1 < etapeFin)
+            setTimeout(function() { simuleMarche(mode) }, (mode == "marche-2") ? 1000 : 0);
     }
     else {
-        dlog(["Etat probabiliste", "incorrect"]);
+        dlog(["Etat probabiliste", "ou étapes", "incorrect"]);
         return null;
     }
 }

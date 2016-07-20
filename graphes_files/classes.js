@@ -1,6 +1,6 @@
-// GRAPH JS : Classes ===================================================================
+// GRAPH JS : Classes ============================================================================================
 
-// Graphe -------------------------------------------------------------------------------
+// Graphe --------------------------------------------------------------------------------------------------------
 
 function Graph(){
     // Initialisation
@@ -44,6 +44,11 @@ function Graph(){
         var edgegroups = this.edgeGroups()
         var group
         var reverse
+
+        // Paramètres police
+        context.textAlign = "center"
+        context.textBaseline = "middle"
+        context.font = "12px Verdana"
 
         for (var i in edgegroups) {
             group = edgegroups[i]
@@ -339,7 +344,7 @@ function Graph(){
     this.attach()
 }
 
-// Noeud --------------------------------------------------------------------------------
+// Noeud ---------------------------------------------------------------------------------------------------------
 
 function Vertex(id, value, x, y){
     // Initialisation
@@ -398,16 +403,17 @@ function Vertex(id, value, x, y){
         context.closePath()
         context.stroke()
 
-        // Paramètres police
-        context.textAlign = "center"
-        context.textBaseline = "middle"
-        context.font = "12px Verdana"
-
         // Affichage du nom et du poids du noeud
         styleContext(labelStyle, false)
         context.fillText(this.value, this.x, this.y)
-        if (this.weigh != 0)
-            context.fillText(this.weigh, this.x - (RAYON_NOEUD + 5), this.y - (RAYON_NOEUD + 8))
+        if (this.weigh != 0) {
+            var xWeigh = this.x - (RAYON_NOEUD + 5);
+            var yWeigh = this.y - (RAYON_NOEUD + 10);
+            context.fillStyle = '#cff';
+            context.fillRect(xWeigh - 30, yWeigh - 10, 60, 20);
+            context.fillStyle = '#000';
+            context.fillText(this.weigh, xWeigh, yWeigh)
+        }
     }
 
     this.getDegree = function() {
@@ -463,7 +469,7 @@ function Vertex(id, value, x, y){
     this.attach()
 }
 
-// Edge (Dirigé ? Oui -> Arc / Non -> Arête) --------------------------------------------
+// Edge (Dirigé ? Oui -> Arc / Non -> Arête) ---------------------------------------------------------------------
 
 function Edge(id, value, from, to){
     // Initialisation
@@ -547,15 +553,14 @@ function Edge(id, value, from, to){
             context.fill();
         }
 
-        // Paramètres police
-        context.textAlign = "center"
-        context.textBaseline = "middle"
-        context.font = "12px Verdana"
-
         // Affichage du nom et du poids du noeud
         styleContext(labelStyle, false)
-        if (this.value != 0)
-            context.fillText(this.value, params['alphax'], params['alphay'])
+        if (this.value != 0) {
+            context.fillStyle = '#fff';
+            context.fillRect(params['alphax'] - 20, params['alphay'] - 10, 40, 20);
+            context.fillStyle = '#000';
+            context.fillText(this.value, params['alphax'], params['alphay']);
+        }
     }
     
     // Supprime l'arête et fusionne les noeuds adjacents liés par l'arête

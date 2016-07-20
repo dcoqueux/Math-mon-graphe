@@ -156,15 +156,14 @@ $(document).ready(function() {
 
         for (var i = 0; i < graph.vertices.length; i++) {
             graph.vertices[i].weigh = 0;
+            $("#vect-" + i).val('')
         }
 
         updateState();
     });
 
     // Toolbox marche aléatoire : lancer une marche aléatoire
-    $(" .launchMarche ").on("click", function() {
-        simuleMarche($(this).attr('id'));
-    });
+    $(" .launchMarche ").on("click", function() { simuleMarche($(this).attr('id')) });
 
     // Modales d'aide
     $(document).on("click", "#kesako-matrice", function() { $(" #modalKesakoMatrice ").modal('show') });
