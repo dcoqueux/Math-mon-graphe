@@ -139,7 +139,7 @@ var formatMatrix = function(matrice, direct) {
 
         if (i == 0) {
             table += '<td rowspan="' + graph.vertices.length + '">' +
-                '<img src="./graphes_files/parenthese-ouvrante.svg" height="' + graph.vertices.length * 30 + '"></td>'
+                '<img src="./img/parenthese-ouvrante.svg" height="' + graph.vertices.length * 30 + '"></td>'
         }
 
         for (var j = 0; j < graph.vertices.length; j++) {
@@ -148,7 +148,7 @@ var formatMatrix = function(matrice, direct) {
 
         if (i == 0) {
             table += '<td rowspan="' + graph.vertices.length + '">' +
-                '<img src="./graphes_files/parenthese-fermante.svg" height="' + graph.vertices.length * 30 + '"></td>'
+                '<img src="./img/parenthese-fermante.svg" height="' + graph.vertices.length * 30 + '"></td>'
         }
 
         table += '</tr>'
