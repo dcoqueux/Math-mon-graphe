@@ -19,20 +19,20 @@ $(document).ready(function(){
     n3 = graph.addVertex([300, 300], "3")
     n4 = graph.addVertex([450, 175], "4")
     // [[1, 2], [2, 4], [1, 3], [3, 4], [2, 3]]
-    graph.addEdge([n1, n2], 25)
-    graph.addEdge([n2, n4], 50)
-    graph.addEdge([n1, n3], 40)
-    graph.addEdge([n3, n4], 61)
-    graph.addEdge([n2, n3], 12)
+    graph.addEdge([n1, n2], 0.25)
+    graph.addEdge([n2, n4], 0.50)
+    graph.addEdge([n1, n3], 0.40)
+    graph.addEdge([n3, n4], 0.61)
+    graph.addEdge([n2, n3], 0.12)
     
     // ===== Ecoute d'evenements clic à la souris =====
 
-    // Drag and drop
-    canvas_elt.mousedown( function(){ dragging = true }  )
-    canvas_elt.mouseup( function(){ dragging = false; updateState() } )
     // Sur le canvas
     canvas_elt.mousemove(canvasMove)
     canvas_elt.click(canvasClick)
+    // Drag and drop
+    canvas_elt.mousedown( function(){ dragging = true }  )
+    canvas_elt.mouseup( function(){ dragging = false; updateState() } )
     // Touche clavier
     $(document).keydown(canvasKey)
     

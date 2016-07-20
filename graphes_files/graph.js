@@ -286,7 +286,9 @@ function finishAddVertex(x, y){
         $(" #vertexX ").val(x);
         $(" #vertexY ").val(y);
         $(" #modalCreationVertex ").modal('show');
-        $(" #vertexName ").click(); // Ne fonctionne pas. TODO : à corriger
+        $(" #modalCreationVertex ").on('shown.bs.modal', function () {
+            $(" #vertexName ").focus();
+        });
     }
 }
 
@@ -572,7 +574,7 @@ function updateState(info){
 
 function updateToolbox() {
     matriceAdjacence();
-    marcheAleatoire();
+    computeMarcheAleatoire();
     // et placer un appel à la fonction là où il y a modification du graphe (comme updateState)
 }  
 
@@ -597,15 +599,15 @@ function fillInfobox(elt) {
         if(elt instanceof Vertex){
             var info = $(formatInfoboxVertex(elt))
             // TODO : Changer value en name
-            $("input #labelVertex", info).keyup (function(){ elt.value = this.value; drawAll(); })
-            $("input #labelVertex", info).change(function(){ updateState(); updateToolbox(); })
+            $(info).on("keyup", "#labelVertex", function(){ elt.value = this.value; drawAll(); })
+            $(info).on("change", "#labelVertex", function(){ updateState(); updateToolbox(); })
         }
         // ===== Infobox Arête =====
         else if(elt instanceof Edge){
             var info = $(formatInfoboxEdge(elt))
             $(".contractbtn", info).click(function(){ elt.contract(); updateState() })
-            $("input #labelEdge", info).keyup (function(){ elt.value = parseFloat(this.value); drawAll(); })
-            $("input #labelEdge", info).change(function(){ updateState(); updateToolbox(); })
+            $(info).on("keyup", "#labelEdge", function(){ elt.value = parseFloat(this.value); drawAll(); })
+            $(info).on("change", "#labelEdge", function(){ updateState(); updateToolbox(); })
         }
 
     // ===== Infobox Graphe =====
@@ -666,19 +668,67 @@ function matriceAdjacence() {
 }
 
 
-function marcheAleatoire() {
+function computeMarcheAleatoire() {
     if (!graph.directed) {
         graph.directed = true;
         updateState();
     }
 
-    matriceTransition = graph.transitionMatrix(false);
+    var matriceTransition = graph.transitionMatrix(false);
     if (matriceTransition == null) {
         $(" #tab-marche ").html(htmlMessages.erreurMatrice);
         $(" #tab-etat ").html("");
+        $(" #go ").addClass("disabled");
     } else {
         $(" #tab-marche ").html(formatMatrix(matriceTransition, false));
         $(" #tab-etat ").html(formatEtatProbabiliste());
+        $(" #go ").removeClass("disabled");
+    }
+}
+
+
+function simuleMarche(mode) {
+    var matriceTransition = graph.transitionMatrix(true);
+    var etatProbabiliste = [];
+    var etatSuivant;
+    var sommeCoordonnees = 0;
+    var etapeDebut = parseInt( $(" #currentStep ").val() );
+    var etapeFin = parseInt( $(" #goalStep ").val() );
+
+    for (var i = 0; i < graph.vertices.length; i++) {
+        var coefficient = eval( $("#vect-" + i).val() )
+        etatProbabiliste.push(coefficient);
+        sommeCoordonnees += coefficient;
+    }
+
+    if (sommeCoordonnees == 1) {
+        etatProbabiliste = $V(etatProbabiliste);
+
+        for (var k = etapeDebut; k < etapeFin; k++) {
+            // Calcul de la transition
+            etatSuivant = matriceTransition.x(etatProbabiliste);
+
+            // Mise à jour des fréquences sur les sommets
+            //dlog(etatSuivant.elements);
+            for (i = 0; i < graph.vertices.length; i++)
+                graph.vertices[i].weigh = etatSuivant.e(i+1).toFixed(5)
+
+            // Mise à jour de l'étape courante
+            etatProbabiliste = etatSuivant;
+
+            // Mode pas à pas
+            if (mode == "marche-2") {
+                setTimeout(function() { $(" #currentStep ").val(k+1); drawAll(); }, 0);
+                sleep(1000)
+            }
+        }
+
+        $(" #currentStep ").val(etapeFin);
+        drawAll();
+    }
+    else {
+        dlog(["Etat probabiliste", "incorrect"]);
+        return null;
     }
 }
 

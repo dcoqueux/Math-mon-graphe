@@ -1,11 +1,7 @@
 htmlMessages = {
     nvNoeud : '<button id="cancelVertex" class="btn btn-sm btn-danger infoboxbtn">Annuler</button><h2>Nouveau noeud</h2>' +
         '<p>Cliquez n\'importe où sur le canvas pour placer un noeud.</p>' +
-        '<p>Raccourci clavier pour la création : Clic sur le canvas en maintenant la touche "Alt" pressé</p>' +
-        '<div class="row"><div class="input-group col-xs-6">' +
-            '<span class="input-group-addon"><input type="checkbox" id="vertexautocomplete"></span>' +
-            '<input type="text" class="form-control" value="Lier automatiquement le nouveau noeud à tous les autres" readonly>' +
-        '</div></div>',
+        '<p>Raccourci clavier pour la création : Clic sur le canvas en maintenant la touche "Alt" pressé</p>',
     nvlArete : '<button id="cancelEdge" class="btn btn-sm btn-danger infoboxbtn">Annuler</button><h2>Nouvelle arête / Nouvel arc</h2>' +
         '<p>Cliquez sur deux noeuds à lier par une nouvelle arête / nouvel arc.</p>' +
         '<p>Raccourci clavier pour la création : Maintenir les touches "Alt" et "Shift" enfoncées et sélectionner 2 noeuds.</p>',

@@ -130,10 +130,10 @@ function Graph(){
     
     /*
      *  Retourne la matrice d'adjacence du graphe
-     *  mobj : détermine si la fonction retourne un tableau bi-dimensionnel ou un objet Matrix
+     *  returnAsObject : détermine si la fonction retourne un tableau bi-dimensionnel ou un objet Matrix
      *  power : puissance à laquelle la matrice d'adjacence est élevée
      */
-    this.adjacencyMatrix = function(mobj, puissance){
+    this.adjacencyMatrix = function(returnAsObject, puissance){
         var matrice = Matrix.Zero(this.vertices.length, this.vertices.length).elements
         var i, j
 
@@ -151,7 +151,7 @@ function Graph(){
             return $M(matrice).power(puissance).elements;
         }
 
-        return mobj ? $M(matrice) : matrice
+        return returnAsObject ? $M(matrice) : matrice
     }
 
     /*
@@ -159,7 +159,7 @@ function Graph(){
      *  et dont la somme des poids des arcs partant d'un noeud est égal à 1)
      *  la méthode retourne la matrice de transition du graphe.
      */
-    this.transitionMatrix = function(mobj, puissance) {
+    this.transitionMatrix = function(returnAsObject) {
         var n = this.vertices.length;
         var matrice = Matrix.Zero(n, n).elements;
         var i, j, k;
@@ -190,15 +190,10 @@ function Graph(){
             }
         }
 
-        // retourner la matrice si toutes les conditions sont vérifiées
-        if (typeof puissance == nb && puissance > 1 && puissance == Math.floor(puissance)) {
-            return $M(matrice).power(puissance).elements;
-        }
-
-        return mobj ? $M(matrice) : matrice;
+        return returnAsObject ? $M(matrice) : matrice;
     }
     
-    this.degreeMatrix = function(mobj){
+    this.degreeMatrix = function(returnAsObject){
         var seq = []
         for (var i = 0; i < this.vertices.length; i++) {
             seq.push(this.vertices[i].getDegree())
@@ -206,14 +201,14 @@ function Graph(){
 
         var dl = (ds.length > 0)
         var DM = dl ? Matrix.Diagonal(seq) : $M([0])
-        return mobj ? DM : (dl ? DM.elements : [])
+        return returnAsObject ? DM : (dl ? DM.elements : [])
     }
     
-    this.laplacianMatrix = function(mobj){
+    this.laplacianMatrix = function(returnAsObject){
         var AM = this.adjacencyMatrix(true)
         var DM = this.degreeMatrix(true)
         var LM = DM.subtract(AM)
-        return mobj ? LM : LM.elements
+        return returnAsObject ? LM : LM.elements
     }
     
     // Spanning tree : Sous-graphe sans boucle
@@ -331,17 +326,12 @@ function Graph(){
         }
     }
     
-    this.semiComplete = function(v, cx){
-        dlog(["Semicomplete", v, v instanceof Vertex])
-        if(v instanceof Vertex && inArray(v, this.vertices)){
-            for (var j = 0; j < this.vertices; j++) {
-                u = this.vertices[j]
-
-                if(u instanceof Vertex && u !== v){
-                    if(!v.isNeighbour(u)){
-                        this.addEdge([v,u])
-                    }
-                }
+    this.semiComplete = function(v){
+        dlog(["Semicomplete", v])
+        if (v instanceof Vertex) {
+            for (var j = 0; j < this.vertices.length; j++) {
+                if (this.vertices[j] !== v)
+                    this.addEdge([v, this.vertices[j]])
             }
         }
     }
@@ -564,7 +554,7 @@ function Edge(id, value, from, to){
 
         // Affichage du nom et du poids du noeud
         styleContext(labelStyle, false)
-        if (this.weigh != 0)
+        if (this.value != 0)
             context.fillText(this.value, params['alphax'], params['alphay'])
     }
     

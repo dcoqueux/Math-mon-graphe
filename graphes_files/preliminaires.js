@@ -71,18 +71,19 @@ var selectedStyle = new ElementStyle("rgba(39,166,255,0.5)", "transparent", 5)
 var labelStyle    = new ElementStyle("transparent", "#fff", 0)
 
 
-// Gestion des fenêtres modales ----------------------------------------------------------------------------------
+// Gestion des évènements sur les toolboxes et les fenêtres modales ----------------------------------------------
 
 $(document).ready(function() {
 
     // Affiche les 'tooltips', indications lorsque le curseur survole les boutons
     $('[data-toggle="tooltip"]').tooltip();
 
-    // Clic sur le bouton de validation du nom du noeud dans le modal création
+    // Modal création de noeud : Clic sur le bouton de validation du nom du noeud dans le 
     $(" #createVertex ").on("click", function() {
         var v = graph.addVertex(
             [parseInt($("#vertexX").val()), parseInt($("#vertexY").val())], $("#vertexName").val())
 
+        dlog($("#vertexautocomplete").is(":checked"))
         if( $("#vertexautocomplete").is(":checked") ) { 
             graph.semiComplete(v) // Ne fonctionne pas. TODO : A corriger
         }
@@ -92,14 +93,14 @@ $(document).ready(function() {
         $( "#modalCreationVertex" ).modal('hide');
     });
 
-    // Clic sur le bouton de chargement de graphe à partir d'une description JSON
+    // Modal chargement de graphe : Clic sur le bouton de chargement dans le menu en haut de page
     $(" #loadGraph ").on("click", function() {
         loadGraphFromJSON($(" #json-area-import ").val());
         $( "#modalLoadGraph" ).modal('hide');
         $(" #json-area-import ").val('');
     });
 
-    // Touche entrée --> validation du formulaire de la fenêtre modale
+    // Toutes les modales : Validation du formulaire de la fenêtre modale à l'appui de la touche "Entrée"
     $(document).on("keypress", function(args) {
         if (args.keyCode == 13) {
             if ($(" #modalCreationVertex ").hasClass('in')) {
@@ -110,20 +111,20 @@ $(document).ready(function() {
         }
     });
 
-    // Fermer une fenêtre modale à l'appui de la touche "Echap"
+    // Toutes les modales : Fermer une fenêtre modale à l'appui de la touche "Echap"
     $(document).on("keyup", function(args) {
         if (args.keyCode == 27 && $(" .modal ").hasClass('in')) {
             $(" .in ").modal('hide');
         }
     });
 
-    // Activer ou désactiver l'orientation du graphe
+    // Infobox : Activer ou désactiver l'orientation du graphe
     $(document).on("click", "#btn-oriente", function() {
         graph.directed = !graph.directed;
         updateState();
     });
 
-    // Demande de suppression d'un élément du graphe
+    // Infobox : Demande de suppression d'un élément du graphe
     $(document).on("click", ".removebtn", function() {
         $(" #modalSuppression ").modal('show');
     });
@@ -134,8 +135,10 @@ $(document).ready(function() {
         $(" #modalSuppression ").modal('hide');
     });
 
+    // Toolbox matrice adjacence : recalcul de la matrice à la modification de la longueur des chemins
     $(" #path-length ").on("change", matriceAdjacence);
 
+    // Toolbox algorithme Dijkstra : exécution de l'algorithme
     $(" #launchDijkstra ").on("click", function() {
         selection = trimArray(selected)
 
@@ -143,8 +146,24 @@ $(document).ready(function() {
             algoDijkstra(selection[0]);
         }
         else {
-            $(".alert").show();
+            //$(".alert").show();
         }
+    });
+
+    // Toolbox marche aléatoire : réinitialisation des valeurs
+    $(" #restartMarche ").on("click", function() {
+        $(" #currentStep ").val(0);
+
+        for (var i = 0; i < graph.vertices.length; i++) {
+            graph.vertices[i].weigh = 0;
+        }
+
+        updateState();
+    });
+
+    // Toolbox marche aléatoire : lancer une marche aléatoire
+    $(" .launchMarche ").on("click", function() {
+        simuleMarche($(this).attr('id'));
     });
 
     // Modales d'aide
@@ -211,6 +230,15 @@ function trimArray(array) {
         } 
     } 
     return a 
+}
+
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds){
+            break;
+        }
+    }
 }
 
 // Annuler l'evenement

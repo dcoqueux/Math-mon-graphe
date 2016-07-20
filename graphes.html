@@ -143,22 +143,22 @@
                         <div class="row">
                             <div class="input-group input-group-sm col-xs-6">
                                 <span class="input-group-addon">Aller à l'étape #</span>
-                                <input type="text" id="step" class="form-control">
+                                <input type="text" id="goalStep" class="form-control">
                                 <div class="input-group-btn dropup">
-                                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" >
+                                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" id="go">
                                       Go ...
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" id="marche-mode-1">Résultat direct</a>
-                                        <a class="dropdown-item" id="marche-mode-2">Pas à pas automatique</a>
-                                        <a class="dropdown-item" id="marche-mode-3">Pas à pas manuel</a>
+                                        <a class="dropdown-item launchMarche" id="marche-1">Résultat direct</a>
+                                        <a class="dropdown-item launchMarche" id="marche-2">Pas à pas automatique</a>
+                                        <!--<a class="dropdown-item" id="marche-mode-3">Pas à pas manuel</a>-->
                                     </div>
                                 </div>
                             </div>
                             <div class="input-group input-group-sm col-xs-6">
                                 <span class="input-group-addon">Etape #</span>
-                                <input type="text" id="step" class="form-control" value="0" readonly>
-                                <span class="input-group-btn"><button class="btn btn-success">Recommencer</button></span>
+                                <input type="text" id="currentStep" class="form-control" value="0" readonly>
+                                <span class="input-group-btn"><button class="btn btn-success" id="restartMarche">Recommencer</button></span>
                             </div>
                         </div>
                         <div class="row">
@@ -227,6 +227,12 @@
                             <span class="input-group-btn">
                                 <button type="button" id="createVertex" class="btn btn-primary">Valider</button>
                             </span>
+                        </div>
+                        <div class="row">
+                            <div class="input-group col-xs-12">
+                                <span class="input-group-addon"><input type="checkbox" id="vertexautocomplete"></span>
+                                <input type="text" class="form-control" value="Lier automatiquement le nouveau noeud à tous les autres" readonly>
+                            </div>
                         </div>
                     </div>
                 </div>
