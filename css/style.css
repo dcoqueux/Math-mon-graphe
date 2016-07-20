@@ -1,0 +1,164 @@
+body {
+	background-color: #eee;
+	color: #333;
+	font-family: 'Helvetica Neue', Helvetica, sans-serif;
+}
+
+.container {
+	max-width: 100%;
+}
+
+.row, .btn-group {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+canvas {
+	clear: both;
+	cursor: default;
+	margin: 0;
+	padding: 0;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	box-shadow: 2px 2px 5px #999;
+	-o-box-shadow: 2px 2px 5px #999;
+	-moz-box-shadow: 2px 2px 5px #999;
+	-webkit-box-shadow: 2px 2px 5px #999;
+}
+
+.table, .table th {
+	text-align: center;
+	vertical-align: center;
+}
+
+.infoboxbtn {
+	float: right;
+}
+
+.btn-label {
+	display: inline;
+}
+
+.fa, .alert, #matrice, #marche-aleatoire, #dijkstra {
+	display: none;
+	overflow: visible;
+}
+
+h1 {
+	margin: 0;
+	padding-top: 10px;
+	font-weight: normal;
+	font-size: 125%;
+	color: #999;
+	text-align: center;
+}
+
+#info h2 {
+	margin-top: 5px;
+	margin-bottom: 15px;
+}
+
+#info p {
+	margin-bottom: 5px;
+}
+
+.modal-body {
+	text-align: justify;
+}
+
+.panel {
+	background-color: #e8e8e8;
+	border: 1px solid #ddd;
+	text-align: left;
+	padding: 10px 20px;
+	margin-bottom: 5px;
+	overflow: hidden;
+	border-radius: 6px;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+}
+
+.panel h2, .panel .title, .panel .selection {
+	font-size: 100%;
+	font-weight: bold;
+	color: #999;
+	text-transform: uppercase;
+	margin: 0;
+}
+
+.panel .table-bordered td, .panel .table-bordered th {
+	border-color: #000;
+}
+
+.panel ul.elements {
+	list-style-type: none;
+	margin: 10px -20px 0;
+	padding: 0;
+	overflow: auto;
+}
+
+.panel ul.elements li {
+	border-top: 1px solid #ddd;
+}
+
+.panel ul.elements li:last-child {
+	border-bottom: 1px solid #ddd;
+}
+
+.panel ul.elements li a {
+	display: block;
+	line-height: 1em;
+	padding: 7px 20px;
+	color: #666;
+	text-decoration: none;
+}
+
+.panel ul.elements li a:hover {
+	background-color: #eee;
+}
+
+.panel ul.elements li.selected a {
+	background-color: #fafafa;
+	font-weight: bold;
+	color: #333;
+}
+
+.panel ul.elements li.selected a:hover {
+	background-color: #fff;
+}
+
+.panel ul.elements li.h {
+	background-color: #ddd;
+	padding: 2px 20px;
+	font-size: 86%;
+	font-weight: bold;
+	color: #fafafa;
+	text-transform: uppercase;
+}
+
+#elements ul.elements {
+	max-height: 300px;
+}
+
+.bs-callout {
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #eee;
+    border-left-width: 5px;
+    border-radius: 3px;
+    border-left-color: #5bc0de;
+    font-size: 14px;
+}
+
+.bs-callout p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 1000px) {
+	.fa {
+		display: inline-block;
+	}
+	.btn-label {
+		display: none;
+	}
+}

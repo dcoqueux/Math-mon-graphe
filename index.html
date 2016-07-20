@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<!-- saved from url=(0064)https://dl.dropboxusercontent.com/u/4189520/GraphJS/graphjs.html -->
+<html lang="en">
+    <head>
+        <title>Math' mon graphe - Modélisation par un graphe</title>
+
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="user-scalable=no, width=1070, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+
+        <!-- Style -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="./css/font/css/font-awesome.min.css">
+        <link rel="stylesheet" href="./css/style.css">
+
+        <!-- Scripts externes -->
+        <script type="text/javascript" src="./js/src/jquery.min.js"></script>
+        <script type="text/javascript" src="./js/src/sylvester.src.js"></script>
+
+        <!-- Scripts persos -->
+        <script type="text/javascript" src="./js/preliminaires.js"></script>
+        <script type="text/javascript" src="./js/messages.js"></script>
+        <script type="text/javascript" src="./js/classes.js"></script>
+        <script type="text/javascript" src="./js/graph.js"></script>
+        <script type="text/javascript" src="./js/main.js"></script>
+    </head>
+
+    <body>
+        <div id="container" class="container">
+            <!-- Titre et barre d'outils de la page -->
+            <div class="row">
+                <div id="toolbar" class="col-xs-7 col-md-8 col-lg-9">
+                    <div class="btn-group btn-group-sm">
+                        <button id="btnselect" class="btn btn-secondary uimode uimode-0 active">
+                            <i class="fa fa-pencil"></i>
+                            <span class="btn-label"> Manipuler</span>
+                        </button>
+                        <button id="btnaddvertex" class="btn btn-secondary uimode uimode-2" data-toggle="tooltip" title="Raccourci : Alt+Clic" data-placement="bottom">
+                            <i class="fa fa-circle-o"></i>
+                            <span class="btn-label"> Ajouter noeud</span>
+                        </button>
+                        <button id="btnaddedge" class="btn btn-secondary uimode uimode-1" data-toggle="tooltip" title="Raccourci : Shift+Alt+Clic" data-placement="bottom">
+                            <i class="fa fa-arrows-h"></i>
+                            <span class="btn-label"> Ajouter arête</span>
+                        </button>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button id="btnload" class="btn btn-secondary">
+                            <i class="fa fa-folder-open-o"></i>
+                            <span class="btn-label"> Charger un graphe</span>
+                        </button>
+                        <button id="btnsave" class="btn btn-secondary">
+                            <i class="fa fa-save"></i>
+                            <span class="btn-label"> Sauvegarder</span>
+                        </button>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button id="btnclear" class="btn btn-secondary">
+                            <i class="fa fa-file-o"></i>
+                            <span class="btn-label"> Nouveau graphe</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-xs-5 col-md-4 col-lg-3">
+                    <h1>Math' mon graphe</h1>
+                </div>
+            </div>
+
+            <div class="row" id="primary">
+                <!-- Canvas : la ou tout se passe ! -->
+                <div id="canvas-container" class="col-xs-7 col-md-8 col-lg-9">
+                    <canvas width="600" height="350"></canvas>
+                </div>
+
+                <!-- Menu latéral de description du graphe -->
+                <div id="secondary" class="col-xs-5 col-md-4 col-lg-3">
+                    <div id="elements" class="panel">
+                        <h2>Eléments du graphe</h2>
+                        <ul class="elements">
+                            <li class="h">Noeuds Test</li>
+                            <li id="vertex-3" class="selected"><a href="javascript://">Noeud A</a></li>
+                            <li id="vertex-2" ><a href="javascript://">Noeud B</a></li>
+                            <li class="h">Arêtes Test</li>
+                            <li id="edge-0"><a href="javascript://">Arête (A,B)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+
+                    <!-- Groupe de boutons au-dessus de l'infobox -->
+                    <div class="btn-group btn-group-sm">
+                        <button id="btninfo" class="btn btn-primary" data-toggle="tooltip" title="Affiche/Cache le panneau d'information" data-placement="bottom">
+                            <i class="fa fa-info"></i>
+                            <span class="btn-label"> Infobox</span>
+                        </button>
+                        <button id="btnmatrice" class="btn btn-secondary" data-toggle="tooltip" title="Combien de chemins entre 2 noeuds ?" data-placement="bottom">
+                            <i class="fa fa-th"></i>
+                            <span class="btn-label"> Matrice d'adjacence</span>
+                        </button>
+                        <button id="btnmarche" class="btn btn-secondary" data-toggle="tooltip" title="Simuler une marche aléatoire" data-placement="bottom">
+                            <i class="fa fa-map-signs"></i>
+                            <span class="btn-label"> Marche aléatoire</span>
+                        </button>
+                        <button id="btndijkstra" class="btn btn-secondary" data-toggle="tooltip" title="Recherche du plus court chemin" data-placement="bottom">
+                            <i class="fa fa-rocket"></i>
+                            <span class="btn-label"> Algorithme de Dijkstra</span>
+                        </button>
+                    </div>
+
+                    <!-- Infobox -->
+                    <div id="info" class="panel">
+                    </div>
+
+                    <!-- Panel matrice d'adjacence -->
+                    <div id="matrice" class="panel">
+                        <div class="row">
+                            <div class="col-xs-4"><h2>Matrice d'adjacence</h2></div>
+                            <div class="col-xs-8"><button id="kesako-matrice" class="btn btn-sm btn-warning pull-right">
+                                <i class="fa fa-question"></i>
+                                <span class="btn-label"> Késako ?</span>
+                            </button></div>
+                        </div>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-addon">Longueur des chemins : </span>
+                            <input type="text" id="path-length" value="1" class="form-control">
+                        </div>
+                        <br/>
+                        <div id="tab-matrice"></div>
+                    </div>
+
+                    <!-- Panel marche aléatoire -->
+                    <div id="marche-aleatoire" class="panel">
+                        <div class="row">
+                            <div class="col-xs-4"><h2>Marche aléatoire</h2></div>
+                            <div class="col-xs-8"><button id="kesako-marche" class="btn btn-sm btn-warning pull-right">
+                                <i class="fa fa-question"></i>
+                                <span class="btn-label"> Késako ?</span>
+                            </button></div>
+                        </div>
+                        <div class="row">
+                            <div class="input-group input-group-sm col-xs-6">
+                                <span class="input-group-addon">Aller à l'étape #</span>
+                                <input type="text" id="goalStep" class="form-control">
+                                <div class="input-group-btn dropup">
+                                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" id="go">
+                                      Go ...
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item launchMarche" id="marche-1">Résultat direct</a>
+                                        <a class="dropdown-item launchMarche" id="marche-2">Pas à pas automatique</a>
+                                        <!--<a class="dropdown-item" id="marche-mode-3">Pas à pas manuel</a>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-group input-group-sm col-xs-6">
+                                <span class="input-group-addon">Etape #</span>
+                                <input type="text" id="currentStep" class="form-control" value="0" readonly>
+                                <span class="input-group-btn"><button class="btn btn-success" id="restartMarche">Recommencer</button></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div id="tab-marche" class="col-xs-9"></div>
+                            <div id="tab-etat" class="col-xs-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Dijkstra -->
+                    <div id="dijkstra" class="panel">
+                        <div class="row">
+                            <div class="col-xs-4"><h2>Plus court chemin</h2></div>
+                            <div class="col-xs-8"><button id="kesako-dijkstra" class="btn btn-sm btn-warning pull-right">
+                                <i class="fa fa-question"></i>
+                                <span class="btn-label"> Késako ?</span>
+                            </button></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-8">
+                                <p>Sélectionnez sur le canvas ou dans la liste à droite un noeud de départ, et lancez l'algorithme en appuyant sur le bouton ci-contre.</p>
+                            </div>
+                            <div class="col-xs-4">
+                                <button id="launchDijkstra" class="btn btn-sm btn-primary">Lancer l'algorithme</button>
+                            </div>
+                        </div>
+                        <div id="tab-dijkstra"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertes -->
+
+        <div class="alert alert-warning" role="alert">
+            <strong>Attention :</strong> Impossible de lancer l'algorithme de Djikstra, vérifiez que vos arêtes sont toutes valuées, et que vous avez sélectionné un noeud de départ et d'arrivée.
+        </div>
+
+        <!-- Fenêtres modales -->
+
+        <div class="modal fade" id="modalSuppression">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <p>Voulez-vous supprimer le(s) élément(s) sélectionné(s) sur le canvas ?</p>
+                        <p>Entrée pour confirmer, Echap pour annuler</p>
+                        <button type="button" class="btn btn-sm btn-primary" id="confirmSuppr">Confirmer</button>
+                        <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Annuler</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalCreationVertex">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Création de noeud</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Pour finir, il faut nommer ce noeud. Comment voulez-vous l'appeler ?</p>
+                        <input type="hidden" id="vertexX"/>
+                        <input type="hidden" id="vertexY"/>
+                        <div class="input-group">
+                            <input type="text" id="vertexName" class="form-control">
+                            <span class="input-group-btn">
+                                <button type="button" id="createVertex" class="btn btn-primary">Valider</button>
+                            </span>
+                        </div>
+                        <div class="row">
+                            <div class="input-group col-xs-12">
+                                <span class="input-group-addon"><input type="checkbox" id="vertexautocomplete"></span>
+                                <input type="text" class="form-control" value="Lier automatiquement le nouveau noeud à tous les autres" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalLoadGraph">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Charger un graphe</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Inscrivez dans la zone de texte ci-dessous la description JSON d'un graphe que vous avez précédemment créé sur cette application :</p>
+                        <textarea id="json-area-import" class="form-control" rows="10"></textarea>
+                        <br/>
+                        <button type="button" class="btn btn-sm btn-primary" id="loadGraph">Charger</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalSaveGraph">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Sauvegarder le graphe</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Voici une description du graphe en JSON. Copiez-collez dans un fichier texte</p>
+                        <textarea id="json-area" class="form-control" rows="10"></textarea>
+                        <br/>
+                        <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Ok merci !</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalKesakoMatrice">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Matrice d'adjacence d'un graphe</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>La matrice d'adjacence est la matrice où le coefficient à la ligne i et la colonne j représente le nombre d'arêtes reliant le sommet i au sommet j</p>
+                        <!-- insérer une image ici -->
+                        <p>En élevant la matrice d'adjacence à la puissance k, c'est-à-dire en procédant à la multiplication de k fois la matrice d'adjacence, les coefficients de la matrice finale s'interprètent comme le nombre de chemins reliant les sommets i et j, distincts et longs de <b>k arêtes</b></p>
+                        <p>La matrice d'adjacence existe, que le graphe soit orienté ou non. Si le graphe n'est pas orienté, la matrice d'adjacence a la propriété d'être symétrique, puisqu'une arête reliant un sommet i au sommet j dans ce sens, relie réciproquement le sommet j au sommet i dans ce sens.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalKesakoMarche">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Marche alétoire dans un graphe probabiliste</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>A chaque noeud d'un graphe probabiliste, on associe une population (exprimée par son effectif ou sa fréquence). D'une étape à l'autre, ces populations migrent (ou pas) vers d'autres noeuds selon les probabilités déclarées sur chaque arc.</p>
+                        <p>Pour simuler une marche aléatoire : 
+                            <ul><li>le graphe doit être <b>orienté</b></li>
+                            <li>tous les arcs doivent être <b>pondérées</b></li>
+                            <li><b>un seul arc au maximum</b> doit relier un même noeud de départ à un même noeud d'arrivée</li></ul>
+                        Ces conditions définissent un graphe probabiliste.</p>
+                        <p>Remarque : la probabilité de rester au sein d'un noeud est calculée automatiquement (les arcs bouclant sur un sommet ne pouvant pas être tracés sur le canvas).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalKesakoDijkstra">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Algorithme de Dijkstra</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>L'algorithme de Dijkstra permet de déterminer le plus court chemin pour se rendre d'un sommet d'un graphe (orienté ou non) à un autre sommet.</p>
+                        <p>Pour appliquer l'algorithme, il est nécessaire de fixer un poids, qui représente le coût d'emprunt d'un chemin, à tous les arcs/toutes les arêtes.</p>
+                        <p>Voici une petite idée de comment fonctionne l'algorithme :</p>
+                        <div class="bs-callout">
+                            Dans un graphe G, choisir un sommet de départ qu'on note s_deb<br/>
+                            P = [ ] // Liste des sommets visités par l'algorithme. Vide au départ<br/><br/>
+
+                            Pour chaque sommet du graphe : // on associe une valeur <br/>
+                            &nbsp; &nbsp; &nbsp; val(s_deb) = 0<br/>
+                            &nbsp; &nbsp; &nbsp; val(s) = +&infin; // s sommet différent de s_deb<br/>
+                            Fin pour<br/><br/>
+
+                            Tant qu'un sommet n'est pas dans la liste P :<br/>
+                            &nbsp; &nbsp; &nbsp; Choisir le sommet s1 n'appartenant pas à P de plus petite valeur<br/>
+                            &nbsp; &nbsp; &nbsp; Insérer s1 dans la liste P<br/>
+                            &nbsp; &nbsp; &nbsp; Pour chaque sommet s2 voisin de s1 n'appartenant pas à P :<br/>
+                            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; val(s2) = minimum( val(s2) ; val(s1) + poids(arete(s1,s2)) )<br/>
+                            &nbsp; &nbsp; &nbsp; Fin pour<br/>
+                            Fin tant que<br/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="./js/src/tether.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
+    </body>
+</html>
