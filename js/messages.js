@@ -171,23 +171,37 @@ formatEtatProbabiliste = function() {
 }
 
 formatDijkstraTab = function(array) {
+    var cell;
     var table = '<table class="table table-bordered table-sm"><thead class="thead-inverse"><tr><th width="10%"></th>'
 
+    // Ligne d'en-tête : noms des sommets du graphe
     for (var i = 1; i <= graph.vertices.length; i++)
         table += '<th>' + array[0][i] + '</th>'
 
-    table += '</tr><tr><td class="table-inverse">Noeud élu</td>'
+    table += '</tr><tr><td class="table-inverse">Initialisation</td>'
 
-    for (var i = 1; i <= graph.vertices.length; i++)
-        table += '<td>' + array[1][i] + '</td>'
+    // Poids initiaux des sommets
+    for (var i = 1; i <= graph.vertices.length; i++) {
+        cell = (array[1][i] == Infinity) ? '+ &infin;' : '0';
+        table += '<td>' + cell + '</td>'
+    }
 
     table += '</tr>'
 
     for (var i = 2; i < array.length; i++) {
-        table += '<tr><td class="table-inverse">' + array[i][0] + '</td>'
+        // A chaque itération, une nouvelle étape exécutée de l'algorithme de Dijkstra.
+        // Un sommet parcouru ...
+        table += '<tr><td class="table-inverse">Sommet ' + array[i][0] + '</td>'
+
+        // ... et de nouveaux poids pour les sommets à afficher
         for (var j = 1; j <= graph.vertices.length; j++) {
-            var val = (array[i][j] == array[i-1][j]) ? '" "' : array[i][j]
-            table += '<td>' + val + '</td>'
+            if (array[i][j] == Infinity) {
+                cell = '+ &infin;';
+            } else {
+                cell = (array[i][j] == array[i-1][j]) ? '---' : array[i][j]
+            }
+
+            table += '<td>' + cell + '</td>'
         }
         table += '</tr>'
     }
