@@ -53,6 +53,10 @@ h1 {
 	text-align: center;
 }
 
+#elements ul.elements {
+	max-height: 300px;
+}
+
 #info h2 {
 	margin-top: 5px;
 	margin-bottom: 15px;
@@ -136,8 +140,9 @@ h1 {
 	text-transform: uppercase;
 }
 
-#elements ul.elements {
-	max-height: 300px;
+#title, #title:hover {
+	text-decoration: none;
+	color: black;
 }
 
 .bs-callout {
