@@ -414,8 +414,10 @@ function displayToolbox(toolname) {
         uiToolbox = $(" #info ");
     else if (toolname == TOOLBOX_MATRICE_ADJACENCE)
         uiToolbox = $(" #matrice ");
-    else if (toolname == TOOLBOX_MARCHE_ALEATOIRE)
+    else if (toolname == TOOLBOX_MARCHE_ALEATOIRE) {
         uiToolbox = $(" #marche-aleatoire ");
+        graph.directed = true;
+    }
     else if (toolname == TOOLBOX_ALGORITHME_DIJKSTRA)
         uiToolbox = $(" #dijkstra ");
 
@@ -676,12 +678,8 @@ function matriceAdjacence() {
 
 
 function computeMarcheAleatoire() {
-    if (!graph.directed) {
-        graph.directed = true;
-        updateState();
-    }
-
     var matriceTransition = graph.transitionMatrix(false);
+
     if (matriceTransition == null) {
         $(" #tab-marche ").html(htmlMessages.erreurMatrice);
         $(" #tab-etat ").html("");

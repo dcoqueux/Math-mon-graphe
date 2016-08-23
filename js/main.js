@@ -1,4 +1,4 @@
-// GRAPH JS : Main ===============================================================================================
+﻿// GRAPH JS : Main ===============================================================================================
 
 $(document).ready(function(){
     
@@ -61,7 +61,10 @@ $(document).ready(function(){
     $( "#btndijkstra" ).click(function(){ displayToolbox(TOOLBOX_ALGORITHME_DIJKSTRA) })
     
     // Resize
-    $(window).resize(updateState)
+    $(window).resize(function() {
+        displayToolbox(TOOLBOX_INFO);
+        updateState();
+    })
     
     // Let's go!
     updateState()
